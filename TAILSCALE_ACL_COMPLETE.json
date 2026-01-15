@@ -5,12 +5,6 @@
       "src": ["autogroup:member"],
       "dst": ["autogroup:self"],
       "users": ["autogroup:nonroot", "root"]
-    },
-    {
-      "action": "accept",
-      "src": ["tag:github-actions"],
-      "dst": ["100.98.86.81:22"],
-      "users": ["autogroup:nonroot", "root"]
     }
   ],
   "tagOwners": {
