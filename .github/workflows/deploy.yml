@@ -1,10 +1,9 @@
-name: Deploy ARK to Server
+name: Deploy ARK to Server (DEPRECATED - Use deploy-ssh.yml)
 
+# DISABLED: This workflow uses FTP which doesn't work with our setup
+# Use deploy-ssh.yml instead (SSH + Tailscale tunnel)
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:  # Manual trigger only - disabled from auto-run
 
 env:
   NODE_VERSION: '20'
