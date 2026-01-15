@@ -1,0 +1,77 @@
+# ========================================
+# ARK NODE - Git Ignore Configuration
+# ========================================
+
+# Docker runtime data
+configs/*/
+!configs/.gitkeep
+
+# Keep config templates for installer
+!configs/homepage/
+configs/homepage/*.db
+configs/homepage/logs/
+
+# Sensitive data - NEVER commit
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Secrets and credentials
+.env
+*.key
+*.pem
+*.crt
+secrets/
+*.secret
+
+# Service-specific excludes
+configs/portainer/
+configs/openwebui/
+configs/jellyfin/
+configs/audiobookshelf/
+configs/syncthing/
+configs/vaultwarden/
+configs/filebrowser/
+configs/hass_config/
+
+# Docker volumes
+volumes/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.code-workspace
+.cursor/
+
+# Backup files
+*.bak
+*.backup
+*-backup
+*.old
+
+# System files
+.git-credentials
+.netrc
+
+# Mount point (if accidentally in repo)
+/mnt/
+
+# User data
+data/
+cache/

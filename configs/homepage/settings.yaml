@@ -1,0 +1,20 @@
+---
+# ARK Node Homepage Settings
+
+title: ARK Node
+favicon: https://cdn-icons-png.flaticon.com/512/891/891462.png
+theme: dark
+color: slate
+layout:
+  System Services:
+    style: row
+    columns: 3
+  AI & Media:
+    style: row
+    columns: 3
+  Storage & Sync:
+    style: row
+    columns: 3
+  Automation & Utilities:
+    style: row
+    columns: 3

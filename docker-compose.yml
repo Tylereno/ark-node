@@ -1,0 +1,340 @@
+# ========================================
+# ARK NODE - Docker Compose Configuration
+# The 13 Services Stack
+# ========================================
+#
+# Mount points:
+#   /mnt/dock      -> E:\DOCK (CIFS mount from Windows host)
+#   /opt/ark/configs -> Local VM storage (for SQLite DBs)
+#
+# Golden Credentials:
+#   Admin User: admin
+#   Admin Password: arknode123
+#
+# Access via: http://hub.ark.local (after hosts injection)
+
+version: '3.8'
+
+networks:
+  ark_network:
+    name: ark_network
+    driver: bridge
+
+# ========================================
+# SERVICE 1: TRAEFIK - Reverse Proxy
+# ========================================
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "8080:8080"  # Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.ark.local`)"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+  # ========================================
+  # SERVICE 2: PORTAINER - Container Management
+  # ========================================
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - /opt/ark/configs/portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.ark.local`)"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+  # ========================================
+  # SERVICE 3: HOMEPAGE - Main Dashboard
+  # ========================================
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - /opt/ark/configs/homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - HOMEPAGE_ALLOWED_HOSTS=*
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepage.rule=Host(`hub.ark.local`) || Host(`ark.local`)"
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+
+  # ========================================
+  # SERVICE 4: AUTOHEAL - Container Watchdog
+  # ========================================
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: autoheal
+    restart: unless-stopped
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+      - AUTOHEAL_INTERVAL=60
+      - AUTOHEAL_START_PERIOD=300
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - ark_network
+
+  # ========================================
+  # SERVICE 5: OLLAMA - AI LLM API
+  # ========================================
+  # NOTE: GPU passthrough is complex in Hyper-V. Using CPU mode initially.
+  # Models are stored on E:\DOCK to prevent re-downloading.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - /mnt/dock/data/models:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      # CPU fallback - no GPU passthrough in initial setup
+      # - NVIDIA_VISIBLE_DEVICES=all
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ollama.rule=Host(`ollama.ark.local`)"
+      - "traefik.http.services.ollama.loadbalancer.server.port=11434"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ========================================
+  # SERVICE 6: OPEN WEBUI - Chat Interface
+  # ========================================
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "3001:8080"
+    volumes:
+      # DB on local storage to prevent SMB corruption
+      - /opt/ark/configs/openwebui:/app/backend/data
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=false
+      - ENABLE_RAG_WEB_SEARCH=false
+    depends_on:
+      - ollama
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.openwebui.rule=Host(`openwebui.ark.local`)"
+      - "traefik.http.services.openwebui.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ========================================
+  # SERVICE 7: JELLYFIN - Media Server
+  # ========================================
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+    volumes:
+      - /opt/ark/configs/jellyfin:/config
+      - /opt/ark/configs/jellyfin/cache:/cache
+      - /mnt/dock/data/media:/media
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.ark.local`)"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ========================================
+  # SERVICE 8: AUDIOBOOKSHELF - Audiobooks & Podcasts
+  # ========================================
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    restart: unless-stopped
+    ports:
+      - "13378:80"
+    volumes:
+      - /opt/ark/configs/audiobookshelf:/config
+      - /mnt/dock/data/media/audiobooks:/audiobooks
+      - /mnt/dock/data/media/podcasts:/podcasts
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.ark.local`)"
+      - "traefik.http.services.audiobookshelf.loadbalancer.server.port=80"
+
+  # ========================================
+  # SERVICE 9: FILEBROWSER - Web File Manager
+  # ========================================
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - /mnt/dock:/srv
+      - /opt/ark/configs/filebrowser:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.filebrowser.rule=Host(`filebrowser.ark.local`)"
+      - "traefik.http.services.filebrowser.loadbalancer.server.port=80"
+
+  # ========================================
+  # SERVICE 10: SYNCTHING - Device Sync
+  # ========================================
+  syncthing:
+    image: syncthing/syncthing:latest
+    container_name: syncthing
+    restart: unless-stopped
+    ports:
+      - "8384:8384"     # Web UI
+      - "22000:22000/tcp"  # Sync
+      - "22000:22000/udp"
+      - "21027:21027/udp"  # Discovery
+    volumes:
+      - /opt/ark/configs/syncthing:/var/syncthing/config
+      - /mnt/dock/data/sync:/var/syncthing/Sync
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.syncthing.rule=Host(`syncthing.ark.local`)"
+      - "traefik.http.services.syncthing.loadbalancer.server.port=8384"
+
+  # ========================================
+  # SERVICE 11: VAULTWARDEN - Password Manager
+  # ========================================
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      # CRITICAL: Local storage for SQLite to prevent corruption
+      - /opt/ark/configs/vaultwarden:/data
+    environment:
+      - ADMIN_TOKEN=arknode123
+      - SIGNUPS_ALLOWED=true
+      - WEBSOCKET_ENABLED=true
+      - TZ=America/Los_Angeles
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.rule=Host(`vaultwarden.ark.local`)"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
+
+  # ========================================
+  # SERVICE 12: KIWIX - Offline Wiki/Medical
+  # ========================================
+  # BANDWIDTH GUARD: Only starts if .zim files exist
+  kiwix:
+    image: ghcr.io/kiwix/kiwix-serve:latest
+    container_name: kiwix
+    restart: unless-stopped
+    ports:
+      - "8083:8080"
+    volumes:
+      - /mnt/dock/data/media/kiwix:/data
+    command: ["*.zim"]
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kiwix.rule=Host(`kiwix.ark.local`)"
+      - "traefik.http.services.kiwix.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ========================================
+  # SERVICE 13: HOME ASSISTANT - IoT Control
+  # ========================================
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+    volumes:
+      - /opt/ark/configs/hass_config:/config
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - TZ=America/Los_Angeles
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.ark.local`)"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"

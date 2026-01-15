@@ -1,0 +1,27 @@
+---
+# ARK Node Dashboard Widgets Configuration
+
+- greeting:
+    text_size: 4xl
+    text: "ARK Node Command Center"
+
+- resources:
+    backend: docker
+    expanded: true
+    cpu: true
+    memory: true
+    disk:
+      - /
+      - /mnt/dock
+
+- search:
+    provider: duckduckgo
+    target: _blank
+    showSearchSuggestions: true
+
+- datetime:
+    text_size: xl
+    format:
+      dateStyle: short
+      timeStyle: short
+      hour12: false

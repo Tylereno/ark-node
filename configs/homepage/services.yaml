@@ -1,0 +1,83 @@
+---
+# ARK Node Services Dashboard Configuration
+# All 13 services organized by function
+
+- System Services:
+    - Portainer:
+        icon: portainer.svg
+        href: http://192.168.26.8:9000
+        description: Container Management
+        widget:
+          type: portainer
+          url: http://portainer:9000
+          env: 1
+          key: {{HOMEPAGE_VAR_PORTAINER_KEY}}
+    
+    - Traefik:
+        icon: traefik.svg
+        href: http://192.168.26.8:8080
+        description: Reverse Proxy Dashboard
+    
+    - Filebrowser:
+        icon: filebrowser.svg
+        href: http://192.168.26.8:8081
+        description: File Management & Storage
+
+- AI & Media:
+    - Open WebUI:
+        icon: openwebui.svg
+        href: http://192.168.26.8:3001
+        description: AI Chat Interface
+    
+    - Ollama:
+        icon: ollama.svg
+        href: http://192.168.26.8:11434
+        description: Local LLM API
+        widget:
+          type: customapi
+          url: http://ollama:11434/api/tags
+          method: GET
+    
+    - Jellyfin:
+        icon: jellyfin.svg
+        href: http://192.168.26.8:8096
+        description: Media Server
+        widget:
+          type: jellyfin
+          url: http://jellyfin:8096
+          key: {{HOMEPAGE_VAR_JELLYFIN_KEY}}
+
+- Storage & Sync:
+    - Syncthing:
+        icon: syncthing.svg
+        href: http://192.168.26.8:8384
+        description: File Synchronization
+    
+    - Vaultwarden:
+        icon: vaultwarden.svg
+        href: http://192.168.26.8:8082
+        description: Password Manager
+    
+    - Audiobookshelf:
+        icon: audiobookshelf.svg
+        href: http://192.168.26.8:13378
+        description: Audiobooks & Podcasts
+
+- Automation & Utilities:
+    - Home Assistant:
+        icon: home-assistant.svg
+        href: http://192.168.26.8:8123
+        description: Smart Home & System Monitor
+        widget:
+          type: homeassistant
+          url: http://homeassistant:8123
+          key: {{HOMEPAGE_VAR_HOMEASSISTANT_KEY}}
+    
+    - Kiwix:
+        icon: kiwix.svg
+        href: http://192.168.26.8:8083
+        description: Offline Wikipedia & Resources
+    
+    - Autoheal:
+        icon: docker.svg
+        description: Container Health Watchdog
