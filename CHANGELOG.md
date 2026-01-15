@@ -158,6 +158,14 @@ This release includes migration of documentation from legacy locations:
 ### Added - 2026-01-15
 - [Content] Cartoons library mount (555GB) via /mnt/cartoons
 - [Content] E:\Cartoons shared and mounted to Jellyfin container
+- [Scripts] Content download automation suite in `/opt/ark/scripts/`:
+  - `download-wikipedia.sh` - Wikipedia ZIM files for Kiwix (interactive/unattended modes)
+  - `download-survival.sh` - Survival and emergency guides
+  - `download-maps.sh` - OpenStreetMap data for OsmAnd
+  - `download-books.sh` - Project Gutenberg and educational content
+  - `check-downloads.sh` - Monitor active downloads and content status
+- [Agents] Marketing agent crew with CrewAI framework in `/opt/ark/agents/`
+- [Services] Voice watcher service in `/opt/ark/services/voice_watcher/`
 - [Docs] .clinerules protocol file (ARK Protocols v2.0)
 - [Docs] CLINERULES_FULL.md comprehensive protocol documentation
 - [Docs] RALPH_PROTOCOL.md recovered from /mnt/dock
@@ -166,12 +174,20 @@ This release includes migration of documentation from legacy locations:
 - [Docs] PROTOCOL_SUMMARY.md overview of all standards
 - [Docs] CONTENT_AUDIT_REPORT.md deployment status analysis
 - [Docs] PROGRESS_REPORT.md comprehensive project status
+- [Docs] AGENT_FARM_SETUP.md - Agent framework documentation
+- [Docs] DOCK_CHANGELOG.md - Storage system changelog
+- [Docs] DOWNLOAD_STATUS.md - Content download tracking
+- [Docs] D_DOCK_AUDIT.md - Dock storage audit report
+- [Docs] HANDOFF_TO_NEW_CHAT.md - Context handoff procedures
+- [Docs] MISSION_SUMMARY_20260115.txt - Daily mission summary
+- [Docs] QUICK_REFERENCE.md - Quick reference guide
 - [Config] Updated jellyfin volumes in docker-compose.yml for cartoons
 - [Config] /etc/fstab entry for persistent cartoons mount
 
 ### Changed - 2026-01-15
 - [Storage] Jellyfin now has read-only access to /mnt/cartoons
 - [Network] CIFS mount added for E:\Cartoons share (555GB content)
+- [Docs] README.md updated with content download scripts documentation and usage examples
 
 ### Fixed - 2026-01-15
 - [Docs] Service count documented (13 actual, not 19)

@@ -185,3 +185,49 @@ See `LICENSE` file for details.
 ---
 
 **Built with ❤️ for digital nomads everywhere.**
+
+## Content Download Scripts
+
+ARK includes automated content acquisition scripts in `/opt/ark/scripts/`:
+
+### Available Scripts
+
+**download-wikipedia.sh** - Download Wikipedia ZIM files for Kiwix
+```bash
+# Interactive mode
+/opt/ark/scripts/download-wikipedia.sh
+
+# Unattended mode (90GB, run overnight)
+/opt/ark/scripts/download-wikipedia.sh --unattended
+```
+
+**download-survival.sh** - Download survival and emergency guides
+```bash
+/opt/ark/scripts/download-survival.sh --all
+```
+
+**download-maps.sh** - Download OpenStreetMap data for OsmAnd
+```bash
+/opt/ark/scripts/download-maps.sh --starter
+```
+
+**download-books.sh** - Download Project Gutenberg and educational content
+```bash
+/opt/ark/scripts/download-books.sh --essential
+```
+
+**check-downloads.sh** - Monitor active downloads and content status
+```bash
+/opt/ark/scripts/check-downloads.sh
+```
+
+### Running Downloads in Background
+
+For large downloads (like Wikipedia), use nohup:
+```bash
+nohup /opt/ark/scripts/download-wikipedia.sh --unattended > /tmp/wikipedia-download.log 2>&1 &
+
+# Check progress
+tail -f /tmp/wikipedia-download.log
+```
+

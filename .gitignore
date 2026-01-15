@@ -75,3 +75,6 @@ Thumbs.db
 # User data
 data/
 cache/
+
+# Large agent frameworks (too big for repo)
+agents/
