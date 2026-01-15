@@ -1,0 +1,62 @@
+# ARK PROTOCOLS (System Core)
+
+## 1. Identity & Designation
+
+- **Vessel**: THE ARK (Lenovo ThinkPad P53)
+- **Callsign**: ARK-01
+- **Mission**: Preservation of Knowledge & Offline Intelligence
+- **Operator**: Nomadty
+- **Location**: `/opt/ark` (VM) + `/mnt/dock` (Windows CIFS)
+- **Network**: 192.168.26.8 (VM), *.ark.local (Traefik routing)
+
+### Active Models
+- **Primary**: Cursor/Claude (Online/High-Throughput)
+- **Fallback**: Ollama/Llama-3 (Offline/Stealth) @ localhost:11434
+
+---
+
+## 2. The "Flash" Doctrine (Model Behavior)
+
+### Verbosity
+- Be concise but comprehensive
+- Read entire files when needed
+- Don't save tokens aggressively - context is king
+
+### Speed
+- Prioritize throughput over hand-holding
+- Run multiple tasks in sequence
+- Auto-proceed on obvious next steps
+
+### Context Awareness
+- **Always read** relevant protocol docs first
+- Check `CHANGELOG.md` for recent changes
+- Review `CONTENT_AUDIT_REPORT.md` for system status
+
+---
+
+## 3. The Workflow (The "Boris" Loop)
+
+### Phase 1: PLAN → Phase 2: ACT → Phase 3: VERIFY
+
+**Phase 3 is MANDATORY**: Always test after changes.
+
+---
+
+## 4. Storage Rules (CRITICAL)
+- **Local SSD** (`/opt/ark/configs`): SQLite, configs, cache
+- **CIFS Mount** (`/mnt/dock`): Media, models, large files
+- **NEVER**: SQLite databases on CIFS (will corrupt!)
+
+---
+
+## 5. Lessons Learned
+
+### Rule 007: Changelog Updates (MANDATORY)
+**Before any git commit**, update `CHANGELOG.md`.
+
+### Rule 010: Read Before You Act
+Always check current state before making changes.
+
+---
+
+See full version at `/opt/ark/.clinerules`

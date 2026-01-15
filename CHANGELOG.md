@@ -154,6 +154,29 @@ This release includes migration of documentation from legacy locations:
 
 ## [Unreleased]
 
+
+### Added - 2026-01-15
+- [Content] Cartoons library mount (555GB) via /mnt/cartoons
+- [Content] E:\Cartoons shared and mounted to Jellyfin container
+- [Docs] .clinerules protocol file (ARK Protocols v2.0)
+- [Docs] CLINERULES_FULL.md comprehensive protocol documentation
+- [Docs] RALPH_PROTOCOL.md recovered from /mnt/dock
+- [Docs] HANDOFF_DOCUMENT.md historical deployment procedures
+- [Docs] DOCKER_COMPOSE_STANDARDS.md complete Docker guide
+- [Docs] PROTOCOL_SUMMARY.md overview of all standards
+- [Docs] CONTENT_AUDIT_REPORT.md deployment status analysis
+- [Docs] PROGRESS_REPORT.md comprehensive project status
+- [Config] Updated jellyfin volumes in docker-compose.yml for cartoons
+- [Config] /etc/fstab entry for persistent cartoons mount
+
+### Changed - 2026-01-15
+- [Storage] Jellyfin now has read-only access to /mnt/cartoons
+- [Network] CIFS mount added for E:\Cartoons share (555GB content)
+
+### Fixed - 2026-01-15
+- [Docs] Service count documented (13 actual, not 19)
+- [Docs] Content package status clarified (0% deployed except cartoons)
+
 ### Planned for v1.1
 - FileBrowser authentication fix
 - Automated Kiwix .zim download helper

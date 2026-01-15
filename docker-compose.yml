@@ -179,6 +179,7 @@ services:
       - /opt/ark/configs/jellyfin:/config
       - /opt/ark/configs/jellyfin/cache:/cache
       - /mnt/dock/data/media:/media
+      - /mnt/cartoons:/media/cartoons:ro
     environment:
       - PUID=1000
       - PGID=1000
