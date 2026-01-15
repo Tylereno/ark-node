@@ -26,7 +26,14 @@ jobs:
         run: |
           echo "Waiting for Tailscale connection to stabilize..."
           sleep 5
-          tailscale status || echo "Tailscale status check failed, continuing..."
+          echo "=== Tailscale Status ==="
+          tailscale status || echo "Tailscale status check failed"
+          echo ""
+          echo "=== Tailscale IP ==="
+          tailscale ip -4 || echo "Failed to get Tailscale IP"
+          echo ""
+          echo "=== Testing connectivity to server ==="
+          ping -c 2 100.98.86.81 || echo "Ping failed"
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
