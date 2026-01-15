@@ -1,0 +1,101 @@
+# ========================================
+# CLOUDFLARE TUNNEL CONFIGURATION
+# ========================================
+#
+# This configuration allows secure remote access to your ARK node
+# without exposing your home IP address.
+#
+# PREREQUISITES:
+# 1. Cloudflare account (free tier works)
+# 2. Domain pointed to Cloudflare nameservers
+# 3. Cloudflare Tunnel created in dashboard
+#
+# SETUP INSTRUCTIONS:
+# See: docs/guides/CLOUDFLARE_SETUP.md
+#
+# ========================================
+
+# Tunnel credentials (get from Cloudflare dashboard)
+# Replace this with your actual tunnel token
+tunnel: YOUR_TUNNEL_ID_HERE
+credentials-file: /root/.cloudflared/YOUR_TUNNEL_ID.json
+
+# ----------------------------------------
+# INGRESS RULES
+# ----------------------------------------
+# Route external URLs to internal services
+
+ingress:
+  # Homepage Dashboard
+  - hostname: ark.tylereno.me
+    service: http://192.168.26.8:3000
+    originRequest:
+      noTLSVerify: true
+  
+  # AI Interface (Open WebUI)
+  - hostname: ai.tylereno.me
+    service: http://192.168.26.8:3001
+    originRequest:
+      noTLSVerify: true
+  
+  # Media Server (Jellyfin)
+  - hostname: media.tylereno.me
+    service: http://192.168.26.8:8096
+    originRequest:
+      noTLSVerify: true
+  
+  # File Browser
+  - hostname: files.tylereno.me
+    service: http://192.168.26.8:8081
+    originRequest:
+      noTLSVerify: true
+  
+  # Password Manager (Vaultwarden)
+  - hostname: vault.tylereno.me
+    service: http://192.168.26.8:8082
+    originRequest:
+      noTLSVerify: true
+  
+  # Code Editor (VS Code)
+  - hostname: code.tylereno.me
+    service: http://192.168.26.8:8443
+    originRequest:
+      noTLSVerify: true
+  
+  # Git Repository (Gitea)
+  - hostname: git.tylereno.me
+    service: http://192.168.26.8:3002
+    originRequest:
+      noTLSVerify: true
+  
+  # Home Automation
+  - hostname: home.tylereno.me
+    service: http://192.168.26.8:8123
+    originRequest:
+      noTLSVerify: true
+  
+  # Offline Wikipedia (Kiwix)
+  - hostname: wiki.tylereno.me
+    service: http://192.168.26.8:8083
+    originRequest:
+      noTLSVerify: true
+
+  # Catch-all rule (must be last)
+  - service: http_status:404
+
+# ----------------------------------------
+# SECURITY SETTINGS
+# ----------------------------------------
+
+# Disable chunked encoding for compatibility
+originRequest:
+  http2Origin: true
+  connectTimeout: 30s
+  keepAliveTimeout: 90s
+
+# ----------------------------------------
+# ALTERNATIVE: Using Environment Variables
+# ----------------------------------------
+# For production, use:
+# tunnel: ${CLOUDFLARE_TUNNEL_ID}
+# Then set CLOUDFLARE_TUNNEL_ID in vessel_secrets.env

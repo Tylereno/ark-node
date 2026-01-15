@@ -20,11 +20,16 @@ configs/homepage/logs/
 
 # Secrets and credentials
 .env
+.env.*
 *.key
 *.pem
 *.crt
 secrets/
 *.secret
+vessel_secrets.env
+*_secrets.env
+credentials.txt
+*.credentials
 
 # Service-specific excludes
 configs/portainer/
@@ -43,6 +48,7 @@ volumes/
 *.log
 logs/
 *.log.*
+.deploy.log
 
 # Temporary files
 *.tmp

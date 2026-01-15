@@ -1,5 +1,7 @@
 # ARK - Autonomous Resilience Kit
 
+**"Your Digital Life, Untethered"**
+
 **Version:** 1.1.0  
 **Platform:** Nomad Node  
 **Status:** Production Ready
@@ -8,62 +10,87 @@
 
 ## What is ARK?
 
-ARK (Autonomous Resilience Kit) is a self-hosted, off-grid capable software stack designed for the **Nomad Node** platform. It provides AI capabilities, media services, file management, and system automation in a single, cohesive deployment.
+ARK (Autonomous Resilience Kit) is a self-hosted, offline-capable software stack built for **digital nomads, off-grid enthusiasts, and privacy advocates**. It's your complete digital infrastructure that works anywhere—with or without internet.
+
+Think of it as your **Internet Jerry Can**: a portable, self-contained technology platform that provides AI capabilities, media services, file management, offline knowledge, and automation in a single, integrated deployment.
+
+## Why ARK?
+
+**Problem:** Cloud services require constant connectivity, monthly fees, and hand over your data to Big Tech.
+
+**Solution:** ARK gives you everything you need—AI, media, files, automation—running on YOUR hardware, working offline, with zero subscriptions.
+
+Perfect for:
+- 🌍 **Digital Nomads** - Unreliable internet? No problem.
+- 🚐 **Off-Grid Living** - Van-life, RV travel, boat dwelling
+- 🔒 **Privacy Advocates** - Your data stays yours
+- 💡 **Self-Hosters** - Learn, tinker, control your tech
 
 ### The Stack
 
 **16 containerized services** providing:
-- 🤖 **AI & LLM**: Ollama + Open WebUI
-- 📺 **Media**: Jellyfin, Audiobookshelf  
-- 📁 **Storage**: FileBrowser, Syncthing, Vaultwarden
-- 🏠 **Automation**: Home Assistant
-- 🌐 **Networking**: Traefik reverse proxy, Tailscale VPN
-- 🔧 **Management**: Portainer, Homepage dashboard
-- 📚 **Knowledge**: Kiwix (offline Wikipedia)
-- 💻 **Development**: Gitea (Git hosting), Code-Server (VS Code)
+- 🤖 **AI & LLM**: Ollama + Open WebUI (run models locally)
+- 📺 **Media**: Jellyfin, Audiobookshelf (your personal Netflix/Spotify)
+- 📁 **Storage**: FileBrowser, Syncthing, Vaultwarden (files + passwords)
+- 🏠 **Automation**: Home Assistant (IoT control)
+- 🌐 **Networking**: Traefik reverse proxy, Tailscale VPN (secure access)
+- 🔧 **Management**: Portainer, Homepage dashboard (easy control)
+- 📚 **Knowledge**: Kiwix (90GB Wikipedia + medical + tech references, offline)
+- 💻 **Development**: Gitea (Git hosting), Code-Server (VS Code in browser)
 
 ---
 
 ## Quick Start
 
-### Prerequisites
-- Ubuntu 24.04 LTS (or similar)
-- Docker Engine 20.10+
-- Docker Compose v2
-- 50GB+ free storage
-- Static IP recommended
+**Want to get running fast?** → [📖 Quickstart Guide](/docs/getting-started/QUICKSTART.md)
 
-### Installation
+### 3-Step Installation
 
 ```bash
-# Clone the repository
-git clone <repo-url> /opt/ark
+# 1. Clone the repository
+git clone <your-repo-url> /opt/ark
 cd /opt/ark
 
-# Deploy the stack
-docker-compose up -d
+# 2. Deploy the stack
+docker compose up -d
 
-# Check status
-docker ps
+# 3. Access your dashboard
+# Open: http://192.168.26.8:3000
 ```
 
-### Access
-
-Once deployed, access the dashboard at:
-- **Homepage**: http://192.168.26.8:3000
-- **Service links**: See `ARK_NODE_LINKS.txt`
-
 **Default credentials**: `admin` / `arknode123`
+
+### What Just Happened?
+
+You just deployed:
+- ✅ 16 containerized services
+- ✅ AI capabilities (Ollama + Open WebUI)
+- ✅ Media server (Jellyfin + Audiobookshelf)
+- ✅ File management (FileBrowser + Syncthing)
+- ✅ Password manager (Vaultwarden)
+- ✅ Home automation (Home Assistant)
+- ✅ Development tools (Gitea + Code-Server)
+- ✅ System monitoring (Portainer + Homepage)
+
+**Next Steps:**
+1. Complete setup wizards for each service
+2. Download offline content (Wikipedia, survival guides, maps)
+3. Configure Tailscale for remote access
+4. Add your media files
+
+**Detailed Instructions:** [Full Installation Guide](/docs/getting-started/INSTALLATION.md)
 
 ---
 
 ## Documentation
 
-Complete documentation available at `/mnt/dock/docs/`:
-- **Developer**: Architecture, API reference, testing
-- **End-User**: Setup guides, troubleshooting, services
-- **Technical**: V1 scope, roadmap, legal
-- **Business**: Business model, feature comparison
+**📚 [Complete Documentation](/docs/README.md)**
+
+- **[Quickstart Guide](/docs/getting-started/QUICKSTART.md)** - Get running in 10 minutes
+- **[Installation Guide](/docs/getting-started/INSTALLATION.md)** - Platform-specific setup
+- **[User Guide](/docs/guides/USER_GUIDE.md)** - Service walkthroughs  
+- **[Troubleshooting](/docs/reference/TROUBLESHOOTING.md)** - Fix common issues
+- **[FAQ](/docs/reference/FAQ.md)** - Frequently asked questions
 
 ---
 

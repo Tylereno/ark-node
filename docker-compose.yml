@@ -8,8 +8,8 @@
 #   /opt/ark/configs -> Local VM storage (for SQLite DBs)
 #
 # Golden Credentials:
-#   Admin User: admin
-#   Admin Password: arknode123
+#   Set in vessel_secrets.env before deployment
+#   See vessel_secrets.example for template
 #
 # Access via: http://hub.ark.local (after hosts injection)
 
@@ -412,8 +412,8 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Los_Angeles
-      - PASSWORD=arknode123
-      - SUDO_PASSWORD=arknode123
+      - PASSWORD=${CODE_SERVER_PASSWORD:-arknode123}
+      - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD:-arknode123}
     networks:
       - ark_network
     labels:
