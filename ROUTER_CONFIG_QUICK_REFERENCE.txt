@@ -1,0 +1,33 @@
+═══════════════════════════════════════════════════════════════
+ROUTER PORT FORWARDING - QUICK REFERENCE
+═══════════════════════════════════════════════════════════════
+
+YOUR SERVER DETAILS:
+  Public IP:  98.51.0.20
+  Private IP: 192.168.26.8
+  SSH Port:   22
+
+ROUTER CONFIGURATION:
+  Access:     http://192.168.1.1 (or check router label)
+  Section:    Port Forwarding / Virtual Server
+  
+  Rule to Add:
+    ┌─────────────────────────────────────────┐
+    │ Service Name: SSH-ARK                   │
+    │ External Port: 22                       │
+    │ Internal Port: 22                       │
+    │ Internal IP: 192.168.26.8              │
+    │ Protocol: TCP                           │
+    │ Status: Enabled                         │
+    └─────────────────────────────────────────┘
+
+TEST AFTER CONFIGURING:
+  Visit: https://canyouseeme.org
+  Enter: Port 22
+  Should say: "Success: I can see your service"
+
+GITHUB SECRETS:
+  SSH_HOST: 98.51.0.20  (NOT tylereno.me if Cloudflare proxy on)
+  SSH_PORT: 22
+
+═══════════════════════════════════════════════════════════════

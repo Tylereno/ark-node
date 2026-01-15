@@ -28,7 +28,26 @@ ssh -i ~/.ssh/github_actions_ark user@your-server-ip
 
 ---
 
-## Step 2: Add GitHub Secrets (5 minutes)
+## Step 2: Set Up Port Forwarding (If Needed)
+
+**If your server is behind a router, you need port forwarding:**
+
+```bash
+# On your server, run:
+./scripts/check-port-forwarding.sh
+```
+
+**Then:**
+1. Access router: http://192.168.1.1
+2. Find "Port Forwarding" section
+3. Forward port 22 to your server's private IP
+4. Test: https://canyouseeme.org (port 22)
+
+**See:** `docs/guides/PORT_FORWARDING_SETUP.md` for detailed instructions.
+
+**Alternative:** Use Cloudflare Tunnel or Tailscale (no port forwarding needed)
+
+## Step 3: Add GitHub Secrets (5 minutes)
 
 Go to: **Repository → Settings → Secrets and variables → Actions**
 
@@ -37,7 +56,8 @@ Add these secrets:
 ### Required:
 ```
 SSH_PRIVATE_KEY        # Contents of ~/.ssh/github_actions_ark
-SSH_HOST              # Your server IP (e.g., 192.168.26.8)
+SSH_HOST              # Your PUBLIC IP (e.g., 98.51.0.20) OR Tailscale IP
+                      # ⚠️ NOT your domain if Cloudflare proxy is enabled
 SSH_USERNAME          # SSH user (e.g., nomadty)
 ARK_NODE_IP           # Server IP
 ARK_DOMAIN            # Your domain (e.g., tylereno.me)
@@ -57,7 +77,7 @@ TAILSCALE_AUTHKEY     # If using Tailscale
 
 ---
 
-## Step 3: Enable Workflow (1 minute)
+## Step 4: Enable Workflow (1 minute)
 
 The workflow files are already in `.github/workflows/`:
 - `deploy-ssh.yml` (recommended - uses SSH)
@@ -67,7 +87,7 @@ The workflow files are already in `.github/workflows/`:
 
 ---
 
-## Step 4: Test Deployment (2 minutes)
+## Step 5: Test Deployment (2 minutes)
 
 ```bash
 # Make a small change
@@ -87,7 +107,7 @@ git push origin main
 
 ---
 
-## Step 5: Verify (2 minutes)
+## Step 6: Verify (2 minutes)
 
 ```bash
 # SSH to server
