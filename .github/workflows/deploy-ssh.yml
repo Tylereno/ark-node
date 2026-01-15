@@ -48,7 +48,7 @@ jobs:
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}  # Should be 100.98.86.81 (Tailscale IP)
+          host: ${{ secrets.SSH_HOST }}  # Should be 100.124.104.38 (Tailscale IP - persistent)
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}  # Standard SSH key, not Tailscale SSH
           port: ${{ secrets.SSH_PORT || 22 }}
