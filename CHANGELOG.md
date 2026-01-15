@@ -5,6 +5,82 @@ All notable changes to ARK (Autonomous Resilience Kit) will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-15 - Resurrection Update
+
+### 🚀 Major Update - Expanded Service Stack
+
+ARK now includes **16 services** (up from 13), with new development tools and secure remote access capabilities.
+
+### Added
+
+#### New Services
+- **Gitea** - Self-hosted Git repository server
+  - Web UI: Port 3002
+  - SSH access: Port 2222
+  - Complete Git hosting solution
+  - Issue tracking and project management
+- **Code-Server** - VS Code in the browser
+  - Port 8443 (HTTPS)
+  - Full VS Code experience remotely
+  - Password: `arknode123`
+  - Persistent workspace at `/mnt/dock/data/code-server`
+- **Tailscale** - Secure remote access via WireGuard VPN
+  - Host network mode
+  - Zero-config mesh networking
+  - Secure remote access to all ARK services
+
+#### Content Automation
+- **Download Scripts** - Automated content acquisition suite in `/opt/ark/scripts/`:
+  - `download-wikipedia.sh` - Wikipedia ZIM files for Kiwix (90GB+ option)
+  - `download-survival.sh` - Survival and emergency preparedness guides
+  - `download-maps.sh` - OpenStreetMap data for offline navigation
+  - `download-books.sh` - Project Gutenberg and educational content
+  - `check-downloads.sh` - Monitor active downloads and storage status
+
+#### Infrastructure
+- **Agent Farm** - CrewAI framework setup in `/opt/ark/agents/`
+  - Marketing agent crew with Python environment
+  - Extensible multi-agent architecture
+- **Voice Watcher Service** - Custom service framework in `/opt/ark/services/voice_watcher/`
+- **RESURRECTION.sh** - Service deployment and resurrection script
+- **night-shift.sh** - Background maintenance automation
+
+#### Documentation
+- `.clinerules` - ARK Protocols v2.0 for AI agent operations
+- `CLINERULES_FULL.md` - Comprehensive protocol documentation
+- `RALPH_PROTOCOL.md` - Recovered architecture reference
+- `DOCKER_COMPOSE_STANDARDS.md` - Complete Docker guide
+- `PROTOCOL_SUMMARY.md` - Overview of all standards
+- `AGENT_FARM_SETUP.md` - Agent framework documentation
+- `QUICK_REFERENCE.md` - Quick reference guide
+- Additional historical documentation (see /docs/archive/)
+
+#### Content Libraries
+- Cartoons library mount (555GB) via `/mnt/cartoons`
+- E:\Cartoons CIFS share integrated with Jellyfin
+
+### Changed
+- **Service count**: 13 → 16 services
+- **Docker Compose**: Updated to Ralph Protocol v1.1 standards
+- **README.md**: Updated with new services and port assignments
+- **SETUP_NOTES.md**: Added Gitea and Code-Server setup procedures
+- **Jellyfin**: Now has read-only access to `/mnt/cartoons` mount
+- **Storage**: Expanded CIFS mount configuration for new content
+- **Repository structure**: Documentation reorganization (historical docs → `/docs/archive/`)
+
+### Fixed
+- Service count documentation (previously inconsistent)
+- Content package deployment status clarification
+- Port mapping documentation completeness
+
+### Security Notes
+- All new services use Ralph Protocol golden credentials (`admin`/`arknode123`)
+- Code-Server operates over HTTPS (port 8443)
+- Tailscale provides zero-trust network access
+- Gitea SSH uses non-standard port 2222
+
+---
+
 ## [1.0.0] - 2026-01-15
 
 ### 🎉 Initial Release - ARK v1.0 "Foundation"
@@ -154,50 +230,12 @@ This release includes migration of documentation from legacy locations:
 
 ## [Unreleased]
 
-
-### Added - 2026-01-15
-- [Content] Cartoons library mount (555GB) via /mnt/cartoons
-- [Content] E:\Cartoons shared and mounted to Jellyfin container
-- [Scripts] Content download automation suite in `/opt/ark/scripts/`:
-  - `download-wikipedia.sh` - Wikipedia ZIM files for Kiwix (interactive/unattended modes)
-  - `download-survival.sh` - Survival and emergency guides
-  - `download-maps.sh` - OpenStreetMap data for OsmAnd
-  - `download-books.sh` - Project Gutenberg and educational content
-  - `check-downloads.sh` - Monitor active downloads and content status
-- [Agents] Marketing agent crew with CrewAI framework in `/opt/ark/agents/`
-- [Services] Voice watcher service in `/opt/ark/services/voice_watcher/`
-- [Docs] .clinerules protocol file (ARK Protocols v2.0)
-- [Docs] CLINERULES_FULL.md comprehensive protocol documentation
-- [Docs] RALPH_PROTOCOL.md recovered from /mnt/dock
-- [Docs] HANDOFF_DOCUMENT.md historical deployment procedures
-- [Docs] DOCKER_COMPOSE_STANDARDS.md complete Docker guide
-- [Docs] PROTOCOL_SUMMARY.md overview of all standards
-- [Docs] CONTENT_AUDIT_REPORT.md deployment status analysis
-- [Docs] PROGRESS_REPORT.md comprehensive project status
-- [Docs] AGENT_FARM_SETUP.md - Agent framework documentation
-- [Docs] DOCK_CHANGELOG.md - Storage system changelog
-- [Docs] DOWNLOAD_STATUS.md - Content download tracking
-- [Docs] D_DOCK_AUDIT.md - Dock storage audit report
-- [Docs] HANDOFF_TO_NEW_CHAT.md - Context handoff procedures
-- [Docs] MISSION_SUMMARY_20260115.txt - Daily mission summary
-- [Docs] QUICK_REFERENCE.md - Quick reference guide
-- [Config] Updated jellyfin volumes in docker-compose.yml for cartoons
-- [Config] /etc/fstab entry for persistent cartoons mount
-
-### Changed - 2026-01-15
-- [Storage] Jellyfin now has read-only access to /mnt/cartoons
-- [Network] CIFS mount added for E:\Cartoons share (555GB content)
-- [Docs] README.md updated with content download scripts documentation and usage examples
-
-### Fixed - 2026-01-15
-- [Docs] Service count documented (13 actual, not 19)
-- [Docs] Content package status clarified (0% deployed except cartoons)
-
-### Planned for v1.1
+### Planned for v1.2
 - FileBrowser authentication fix
 - Automated Kiwix .zim download helper
 - Improved first-run setup wizard
 - Health check dashboard integration
+- Tailscale authentication automation
 
 ### Planned for v2.0 (See v2-roadmap.md)
 - Linux bare-metal support
@@ -205,13 +243,16 @@ This release includes migration of documentation from legacy locations:
 - Web-based configuration UI
 - Automated backup system
 - Fleet management (Mission Control)
+- Multi-architecture support (ARM64)
 
 ---
 
 ## Version History
 
-- **v1.0.0** (2026-01-15) - Initial production release
+- **v1.1.0** (2026-01-15) - Resurrection Update (16 services)
+- **v1.0.0** (2026-01-15) - Initial production release (13 services)
 - **v0.2.x** (2025-12-xx) - Beta testing phase
 - **v0.1.x** (2025-11-xx) - Alpha development
 
+[1.1.0]: https://github.com/tylereno/ark/releases/tag/v1.1.0
 [1.0.0]: https://github.com/tylereno/ark/releases/tag/v1.0.0

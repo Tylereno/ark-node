@@ -1,6 +1,6 @@
 # ARK - Autonomous Resilience Kit
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Platform:** Nomad Node  
 **Status:** Production Ready
 
@@ -12,14 +12,15 @@ ARK (Autonomous Resilience Kit) is a self-hosted, off-grid capable software stac
 
 ### The Stack
 
-**13 containerized services** providing:
+**16 containerized services** providing:
 - 🤖 **AI & LLM**: Ollama + Open WebUI
 - 📺 **Media**: Jellyfin, Audiobookshelf  
 - 📁 **Storage**: FileBrowser, Syncthing, Vaultwarden
 - 🏠 **Automation**: Home Assistant
-- 🌐 **Networking**: Traefik reverse proxy
+- 🌐 **Networking**: Traefik reverse proxy, Tailscale VPN
 - 🔧 **Management**: Portainer, Homepage dashboard
 - 📚 **Knowledge**: Kiwix (offline Wikipedia)
+- 💻 **Development**: Gitea (Git hosting), Code-Server (VS Code)
 
 ---
 
@@ -83,6 +84,7 @@ Complete documentation available at `/mnt/dock/docs/`:
 |---------|------|---------|
 | Homepage | 3000 | Main dashboard |
 | Open WebUI | 3001 | AI chat interface |
+| Gitea | 3002 | Git repository hosting |
 | Traefik | 8080 | Reverse proxy dashboard |
 | FileBrowser | 8081 | File manager |
 | Vaultwarden | 8082 | Password manager |
@@ -93,6 +95,9 @@ Complete documentation available at `/mnt/dock/docs/`:
 | Portainer | 9000 | Container management |
 | Ollama | 11434 | LLM API |
 | Audiobookshelf | 13378 | Audiobooks |
+| Code-Server | 8443 | VS Code in browser |
+| Gitea SSH | 2222 | Git SSH access |
+| Tailscale | Host | Secure remote access |
 
 ---
 
@@ -114,6 +119,8 @@ After deployment, complete these setup wizards:
 2. **Home Assistant** (http://192.168.26.8:8123) - Onboarding wizard
 3. **Jellyfin** (http://192.168.26.8:8096) - Media library setup
 4. **Vaultwarden** (http://192.168.26.8:8082) - Create first account
+5. **Gitea** (http://192.168.26.8:3002) - Initialize admin account
+6. **Code-Server** (http://192.168.26.8:8443) - Enter password (arknode123)
 
 ---
 
@@ -122,6 +129,7 @@ After deployment, complete these setup wizards:
 - **FileBrowser**: Auth database requires reset on first run
 - **Kiwix**: Requires manual .zim file downloads
 - **Portainer**: Requires 12+ character password
+- **Tailscale**: May require authentication via `docker exec`
 
 See `CHANGELOG.md` for complete list.
 
@@ -137,7 +145,16 @@ See `CHANGELOG.md` for complete list.
 │   ├── homepage/          # Dashboard config
 │   ├── portainer/         # Container management data
 │   ├── jellyfin/          # Media server config
+│   ├── gitea/             # Git server config
+│   ├── code-server/       # VS Code config
 │   └── ...
+├── scripts/               # Utility scripts
+│   ├── download-wikipedia.sh
+│   ├── download-survival.sh
+│   ├── download-maps.sh
+│   ├── download-books.sh
+│   ├── check-downloads.sh
+│   └── RESURRECTION.sh    # Service deployment script
 ├── VERSION                # Semantic version
 ├── CHANGELOG.md           # Version history
 └── README.md              # This file
@@ -230,4 +247,3 @@ nohup /opt/ark/scripts/download-wikipedia.sh --unattended > /tmp/wikipedia-downl
 # Check progress
 tail -f /tmp/wikipedia-download.log
 ```
-
