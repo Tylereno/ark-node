@@ -13,8 +13,6 @@
 #
 # Access via: http://hub.ark.local (after hosts injection)
 
-version: '3.8'
-
 networks:
   ark_network:
     name: ark_network
