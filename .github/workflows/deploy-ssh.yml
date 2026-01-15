@@ -22,6 +22,12 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:github-actions
 
+      - name: Wait for Tailscale to be ready
+        run: |
+          echo "Waiting for Tailscale connection to stabilize..."
+          sleep 5
+          tailscale status || echo "Tailscale status check failed, continuing..."
+
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
