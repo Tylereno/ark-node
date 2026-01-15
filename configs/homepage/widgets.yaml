@@ -1,9 +1,19 @@
 ---
 # ARK Node Dashboard Widgets Configuration
 
+- logo:
+    icon: https://tailscale.com/favicon.ico
+
 - greeting:
     text_size: 4xl
     text: "ARK Node Command Center"
+
+- systemload:
+    label: CPU
+    cpu: true
+
+- memory:
+    label: RAM
 
 - resources:
     backend: docker

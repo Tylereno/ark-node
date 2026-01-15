@@ -2,28 +2,28 @@
 # ARK Node Services Dashboard Configuration
 # All 16 services organized by function
 
-- System Services:
+- Infrastructure:
+    - Traefik:
+        icon: traefik.svg
+        href: http://100.124.104.38:8080
+        description: Reverse Proxy Monitor
     - Portainer:
         icon: portainer.svg
-        href: http://192.168.26.8:9000
+        href: http://100.124.104.38:9000
         description: Container Management
+        container: portainer
         widget:
           type: portainer
           url: http://portainer:9000
           env: 1
           key: {{HOMEPAGE_VAR_PORTAINER_KEY}}
     
-    - Traefik:
-        icon: traefik.svg
-        href: http://192.168.26.8:8080
-        description: Reverse Proxy Dashboard
-    
     - Filebrowser:
         icon: filebrowser.svg
         href: http://192.168.26.8:8081
         description: File Management & Storage
 
-- AI & Media:
+- Daily Use:
     - Open WebUI:
         icon: openwebui.svg
         href: http://192.168.26.8:3001
@@ -40,8 +40,9 @@
     
     - Jellyfin:
         icon: jellyfin.svg
-        href: http://192.168.26.8:8096
+        href: http://jellyfin.nomad-node.tail143b3f.ts.net
         description: Media Server
+        container: jellyfin
         widget:
           type: jellyfin
           url: http://jellyfin:8096
@@ -66,8 +67,9 @@
 - Automation & Utilities:
     - Home Assistant:
         icon: home-assistant.svg
-        href: http://192.168.26.8:8123
+        href: http://home.nomad-node.tail143b3f.ts.net
         description: Smart Home & System Monitor
+        container: homeassistant
         widget:
           type: homeassistant
           url: http://homeassistant:8123
