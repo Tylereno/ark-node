@@ -14,7 +14,7 @@
     {
       "action": "accept",
       "src": ["tag:github-actions"],
-      "dst": ["100.98.86.81:22"]
+      "dst": ["100.124.104.38:22"]
     }
   ]
 }

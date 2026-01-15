@@ -34,7 +34,7 @@ jobs:
           echo "GitHub Actions Tailscale IP: $TS_IP"
           echo ""
           echo "=== Testing connectivity to server ==="
-          ping -c 3 100.98.86.81 || (echo "❌ Cannot ping server" && exit 1)
+          ping -c 3 100.124.104.38 || (echo "❌ Cannot ping server" && exit 1)
           echo "✅ Connectivity test passed"
 
       - name: Setup SSH

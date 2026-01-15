@@ -355,7 +355,7 @@ services:
       - TS_USERSPACE=false
       - TS_ACCEPT_DNS=true
     volumes:
-      - /opt/ark/configs/tailscale:/var/lib/tailscale
+      - /var/lib/tailscale:/var/lib/tailscale  # PERSISTENT: Use system directory, not configs/
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - NET_ADMIN
