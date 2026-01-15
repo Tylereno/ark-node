@@ -128,12 +128,13 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.ollama.rule=Host(`ollama.ark.local`)"
       - "traefik.http.services.ollama.loadbalancer.server.port=11434"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+    # healthcheck:
+      # test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      # interval: 30s
+      # timeout: 10s
+      # retries: 3
+      # start_period: 60s
+      # NOTE: Disabled - Ollama container doesn't include curl, causing restart loop
 
   # ========================================
   # SERVICE 6: OPEN WEBUI - Chat Interface

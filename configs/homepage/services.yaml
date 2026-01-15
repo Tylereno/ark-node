@@ -1,6 +1,6 @@
 ---
 # ARK Node Services Dashboard Configuration
-# All 13 services organized by function
+# All 16 services organized by function
 
 - System Services:
     - Portainer:
@@ -81,3 +81,21 @@
     - Autoheal:
         icon: docker.svg
         description: Container Health Watchdog
+
+- Development:
+    - Gitea:
+        icon: gitea.svg
+        href: http://192.168.26.8:3002
+        description: Git Repository Server
+        widget:
+          type: gitea
+          url: http://gitea:3000
+    
+    - Code-Server:
+        icon: vscode.svg
+        href: http://192.168.26.8:8443
+        description: VS Code in Browser
+    
+    - Tailscale:
+        icon: tailscale.svg
+        description: Secure Remote Access (Host Network)
