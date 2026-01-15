@@ -44,14 +44,17 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      # Deploy using standard SSH key authentication over Tailscale network tunnel
+      # Tailscale is only used for network connectivity, NOT for SSH authentication
+      # This bypasses Tailscale SSH policies and uses standard SSH keys
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.SSH_HOST }}  # Should be 100.98.86.81 (Tailscale IP)
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # Standard SSH key, not Tailscale SSH
           port: ${{ secrets.SSH_PORT || 22 }}
-          debug: true
+          debug: true  # Show detailed SSH connection logs
           proxy_timeout: 30s
           script: |
             set -e
