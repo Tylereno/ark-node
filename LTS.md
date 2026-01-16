@@ -58,7 +58,7 @@ All Docker images in v3.1.0 are pinned to specific versions:
 | Traefik | v3.1 | Pinned |
 | Portainer | 2.20.4 | Pinned |
 | Homepage | v1.0.0 | Pinned |
-| Autoheal | latest | Uses 'latest' as stable tag |
+| Autoheal | **REMOVED** | Removed in LTS - replaced by native Docker restart policies |
 | Ollama | 0.1.30 | Pinned |
 | Jellyfin | 10.11.4 | Pinned |
 | Audiobookshelf | v2.10.0 | Pinned |

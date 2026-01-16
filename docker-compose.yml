@@ -92,22 +92,17 @@ services:
       - "traefik.http.services.homepage.loadbalancer.server.port=3000"
 
   # ========================================
-  # SERVICE 4: AUTOHEAL - Container Watchdog
+  # SERVICE 4: AUTOHEAL - REMOVED in LTS v3.1.0
   # ========================================
-  autoheal:
-    image: willfarrell/autoheal:latest  # LTS: Note - this image uses 'latest' as stable tag
-    container_name: autoheal
-    profiles:
-      - core
-    restart: unless-stopped
-    environment:
-      - AUTOHEAL_CONTAINER_LABEL=all
-      - AUTOHEAL_INTERVAL=60
-      - AUTOHEAL_START_PERIOD=300
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - ark_network
+  # LTS Decision: Removed external dependency recovery agent in favor of native
+  # Docker restart policies (restart: unless-stopped) and ark-manager.sh heal command.
+  # This reduces memory overhead, eliminates a potential failure point, and relies
+  # on kernel-level restart policies which are 100% reliable.
+  #
+  # Self-healing is provided by:
+  # 1. Native Docker restart policies (all services have restart: unless-stopped)
+  # 2. ark-manager.sh heal command for manual/automated recovery
+  # 3. Ralph Loop (ark-manager.sh loop) for comprehensive health checks
 
   # ========================================
   # SERVICE 5: OLLAMA - AI LLM API

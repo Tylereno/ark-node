@@ -34,6 +34,14 @@ This version is frozen for stability. Future updates will strictly target:
 - **Docker Images** - All services pinned to specific versions for deterministic deployments
 - **Error Handling** - Added `set -euo pipefail` to `ark-manager.sh` for robust error handling
 - **Security** - Removed hardcoded secrets, moved to environment variables
+- **Autoheal Service** - Removed external dependency recovery agent in favor of native Docker restart policies
+
+### Removed
+
+- **Autoheal Container** - Removed to minimize dependencies and reduce failure points. Self-healing is now provided by:
+  - Native Docker restart policies (`restart: unless-stopped` on all services)
+  - `ark-manager.sh heal` command for manual/automated recovery
+  - Ralph Loop (`ark-manager.sh loop`) for comprehensive health monitoring
 
 ### Fixed
 

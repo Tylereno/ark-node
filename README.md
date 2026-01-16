@@ -111,7 +111,6 @@ Essential infrastructure that provides the foundation:
 |---------|------|---------|---------|
 | **Traefik** | 80 | Reverse proxy & routing | `core` |
 | **Tailscale** | Host | Secure mesh networking | `core` |
-| **Autoheal** | - | Container watchdog | `core` |
 | **Homepage** | 3000 | Main dashboard | `core` |
 | **Portainer** | 9000 | Container management | `core` |
 | **Syncthing** | 8384 | Device file sync | `core` |
