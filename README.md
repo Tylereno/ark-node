@@ -38,6 +38,7 @@ ARK is a **sovereign operational technology (OT) layer** designed for the extrem
 - **Deterministic State:** Pinned container versions ensure reproducible deployments
 - **Enterprise Telemetry:** Sentry error tracking and Datadog infrastructure monitoring for fleet management
 - **Structured Logging:** Standardized log format with rotation and dual output (STDOUT + files)
+- **System Resilience:** Active monitoring with autoheal daemon and native healthchecks for automatic service recovery
 
 ---
 
@@ -85,6 +86,12 @@ ARK is not a "hybrid cloud" extension; it is a **Sovereign Node**. It treats the
 **Zero-Dependency Boot:** The stack initializes fully without external IAM, DNS, or license servers. It is "born ready" at power-on.
 
 **State Preservation:** Critical data stored on NVMe storage with atomic write guarantees. State survives power cycles, kernel panics, and hardware resets.
+
+### System Resilience
+
+**Active Monitoring:** Uses autoheal daemon to restart hung services automatically. The watchdog continuously monitors container health status and intervenes when services become unresponsive.
+
+**Healthchecks:** Native heartbeat monitoring for Traefik, Homepage, and Portainer. Each critical service exposes a health endpoint that is probed at regular intervals. Failed healthchecks trigger automatic container restart without human intervention.
 
 ### Power-Aware Orchestration
 
