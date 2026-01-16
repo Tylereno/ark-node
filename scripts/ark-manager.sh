@@ -1,5 +1,5 @@
 #!/bin/bash
-# ARK Autonomous Manager v3.1.0
+# ARK Autonomous Manager v3.1.2
 # Modular CLI Interface for ARK Infrastructure
 # LTS Release - Error handling and deterministic behavior enforced
 
