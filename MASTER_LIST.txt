@@ -1,0 +1,42 @@
+# ARK Node Master File List
+# This file defines which documentation files are essential and should be kept.
+# Files not in this list may be removed during documentation audits.
+
+# Root Directory - Essential Files Only
+README.md
+MASTER_LIST.txt
+crewai-system-prompt.md
+docker-compose.yml
+.env
+vessel_secrets.env
+
+# Documentation Directory (/docs)
+# Core documentation lives here
+docs/CAPTAINS_LOG.md
+docs/CHANGELOG.md
+docs/ARK_MANAGER_GUIDE.md
+docs/INDUSTRIAL_GRADE_SETUP.md
+docs/TRAEFIK_DOMAINS.md
+docs/BACKUP_SYSTEM.md
+docs/RALPH_LOOP_COMPLETE.md
+
+# Scripts Directory (/scripts)
+scripts/
+scripts/ark-manager.sh
+scripts/backup-configs.sh
+scripts/cleanup_root.sh
+scripts/update-changelog.sh
+scripts/setup-ralph-cron.sh
+scripts/setup-backup-cron.sh
+
+# GitHub Actions
+.github/workflows/
+
+# Logs Directory
+logs/
+
+# Configs Directory
+configs/
+
+# Archive Directory (old docs)
+docs/archive/
