@@ -1,41 +1,51 @@
-# ARK - Autonomous Resilience Kit
+# ARK Node - Autonomous Edge Infrastructure
 
-**"Your Digital Life, Untethered"**
+**"Software should be robust enough to run in the dark."**
 
-**Version:** 1.2.0  
-**Platform:** Nomad Node  
-**Status:** Production Ready
+**Version:** 3.1.0  
+**Status:** **LTS (Long Term Support)**  
+**Platform:** Edge Infrastructure Stack
+
+> **LTS Declaration**
+> 
+> ARK Node v3.1.0 is the stable, feature-complete release. This version is frozen for long-term support. Future updates will strictly target security patches and critical constraint-driven fixes. No new features will be introduced to maintain maximum stability and deterministic behavior.
 
 ---
 
-## What is ARK?
+## What is ARK Node?
 
-ARK (Autonomous Resilience Kit) is a self-hosted, offline-capable infrastructure platform designed for **unstable network environments, zero-trust deployments, and operational survivability**. It's a cohesive infrastructure stack that provides AI capabilities, media services, file management, offline knowledge, and automation—all running autonomously with self-healing capabilities.
+ARK Node is an **autonomous edge infrastructure platform** designed for constrained environments where traditional cloud assumptions fail: intermittent power, unreliable connectivity, and bare-metal deployments. It provides a complete, self-healing infrastructure stack with machine-readable status contracts, zero-dependency recovery, and deterministic state management.
 
-Think of it as your **Internet Jerry Can**: a portable, self-contained technology platform that works anywhere—with or without internet.
+**Core Philosophy:** Infrastructure should survive entropy. When power fails, networks drop, or you're operating in isolation, the system must recover autonomously without human intervention.
+
+**Key Features:**
+- **Machine-Readable Status Contract:** JSON API for automation and monitoring (`ark-manager.sh status --json`)
+- **Zero-Dependency Recovery:** Self-healing containers with automatic restart policies
+- **Deterministic State:** Pinned container versions ensure reproducible deployments
+- **Profile-Based Architecture:** Modular service profiles (core, apps, media) for resource-constrained deployments
 
 ---
 
 ## Who This Is For
 
-ARK is built for operators who need infrastructure that survives real-world conditions:
+ARK Node is built for operators deploying infrastructure in **constrained edge environments** where traditional cloud-native solutions fail:
 
 ### ✔ Ideal Use Cases
 
-- **🌍 Digital Nomads** - Unreliable internet? Power interruptions? ARK keeps running
-- **🚐 Off-Grid Living** - Van-life, RV travel, boat dwelling, remote cabins
-- **🔒 Privacy Advocates** - Your data stays yours, no cloud dependencies
-- **⚡ Field Operations** - Disaster response, field research, remote construction crews
-- **🛡️ Zero-Trust Environments** - Identity-first networking via Tailscale mesh
-- **💡 Self-Hosters** - Developers who want zero-maintenance personal infrastructure
+- **Edge Computing Deployments** - Remote sites with unreliable connectivity and power
+- **Field Operations** - Disaster response, research stations, remote construction sites
+- **Zero-Trust Networks** - Identity-first networking via Tailscale mesh, no exposed ports
+- **Autonomous Infrastructure** - Systems that must recover without human intervention
+- **Resource-Constrained Environments** - Low-power devices, limited bandwidth, intermittent connectivity
+- **Deterministic Deployments** - Reproducible infrastructure with pinned versions
 
 ### ✖ Not Recommended For
 
-- **Beginners** - Requires Docker, networking, and Linux familiarity
-- **Public Multi-Tenant Hosting** - Designed for single-user or small team use
-- **High-Compliance Enterprise** - Not certified for HIPAA, SOC2, or similar requirements
-- **High-Performance Workloads** - Optimized for resilience, not raw throughput
-- **Cloud-Native Deployments** - Built for edge/offline scenarios, not cloud-first
+- **Beginners** - Requires Docker, networking, and Linux systems administration experience
+- **Public Multi-Tenant Hosting** - Designed for single-operator or small team deployments
+- **High-Compliance Enterprise** - Not certified for HIPAA, SOC2, or similar regulatory requirements
+- **High-Performance Workloads** - Optimized for resilience and autonomy, not raw throughput
+- **Cloud-Native Deployments** - Built for edge/offline scenarios, not cloud-first architectures
 
 ---
 

@@ -49,7 +49,7 @@ services:
   # SERVICE 2: PORTAINER - Container Management
   # ========================================
   portainer:
-    image: portainer/portainer-ce:latest
+    image: portainer/portainer-ce:2.20.4  # LTS: Pinned for deterministic deployments
     container_name: portainer
     profiles:
       - core
@@ -70,7 +70,7 @@ services:
   # SERVICE 3: HOMEPAGE - Main Dashboard
   # ========================================
   homepage:
-    image: ghcr.io/gethomepage/homepage:latest
+    image: ghcr.io/gethomepage/homepage:v1.0.0  # LTS: Pinned for deterministic deployments
     container_name: homepage
     profiles:
       - core
@@ -95,7 +95,7 @@ services:
   # SERVICE 4: AUTOHEAL - Container Watchdog
   # ========================================
   autoheal:
-    image: willfarrell/autoheal:latest
+    image: willfarrell/autoheal:latest  # LTS: Note - this image uses 'latest' as stable tag
     container_name: autoheal
     profiles:
       - core
@@ -115,7 +115,7 @@ services:
   # NOTE: GPU passthrough is complex in Hyper-V. Using CPU mode initially.
   # Models are stored on E:\DOCK to prevent re-downloading.
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.1.30  # LTS: Pinned for deterministic deployments
     container_name: ollama
     profiles:
       - apps
@@ -179,7 +179,7 @@ services:
   # SERVICE 7: JELLYFIN - Media Server
   # ========================================
   jellyfin:
-    image: jellyfin/jellyfin:latest
+    image: jellyfin/jellyfin:10.11.4  # LTS: Pinned for deterministic deployments
     container_name: jellyfin
     profiles:
       - media
@@ -212,7 +212,7 @@ services:
   # SERVICE 8: AUDIOBOOKSHELF - Audiobooks & Podcasts
   # ========================================
   audiobookshelf:
-    image: ghcr.io/advplyr/audiobookshelf:latest
+    image: ghcr.io/advplyr/audiobookshelf:v2.10.0  # LTS: Pinned for deterministic deployments
     container_name: audiobookshelf
     profiles:
       - media
@@ -238,7 +238,7 @@ services:
   # SERVICE 9: FILEBROWSER - Web File Manager
   # ========================================
   filebrowser:
-    image: filebrowser/filebrowser:latest
+    image: filebrowser/filebrowser:v2.49.0  # LTS: Pinned for deterministic deployments
     container_name: filebrowser
     profiles:
       - apps
@@ -262,7 +262,7 @@ services:
   # SERVICE 10: SYNCTHING - Device Sync
   # ========================================
   syncthing:
-    image: syncthing/syncthing:latest
+    image: syncthing/syncthing:v1.27.7  # LTS: Pinned for deterministic deployments
     container_name: syncthing
     profiles:
       - core
@@ -290,7 +290,7 @@ services:
   # SERVICE 11: VAULTWARDEN - Password Manager
   # ========================================
   vaultwarden:
-    image: vaultwarden/server:latest
+    image: vaultwarden/server:v1.32.0  # LTS: Pinned for deterministic deployments
     container_name: vaultwarden
     profiles:
       - apps
@@ -301,7 +301,7 @@ services:
       # CRITICAL: Local storage for SQLite to prevent corruption
       - /opt/ark/configs/vaultwarden:/data
     environment:
-      - ADMIN_TOKEN=arknode123
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-}  # LTS: Use environment variable, not hardcoded
       - SIGNUPS_ALLOWED=true
       - WEBSOCKET_ENABLED=true
       - TZ=America/Los_Angeles
@@ -317,7 +317,7 @@ services:
   # ========================================
   # BANDWIDTH GUARD: Only starts if .zim files exist
   kiwix:
-    image: ghcr.io/kiwix/kiwix-serve:latest
+    image: ghcr.io/kiwix/kiwix-serve:3.8.0  # LTS: Pinned for deterministic deployments
     container_name: kiwix
     profiles:
       - apps
@@ -367,7 +367,7 @@ services:
   # SERVICE 14: TAILSCALE - The Tether
   # ========================================
   tailscale:
-    image: tailscale/tailscale:latest
+    image: tailscale/tailscale:v1.68.0  # LTS: Pinned for deterministic deployments
     container_name: tailscale
     profiles:
       - core
@@ -391,7 +391,7 @@ services:
   # SERVICE 15: GITEA - Code Sovereignty
   # ========================================
   gitea:
-    image: gitea/gitea:latest
+    image: gitea/gitea:1.23.4  # LTS: Pinned for deterministic deployments
     container_name: gitea
     profiles:
       - apps
@@ -425,7 +425,7 @@ services:
   # SERVICE 16: CODE-SERVER - Development Environment
   # ========================================
   code-server:
-    image: linuxserver/code-server:latest
+    image: lscr.io/linuxserver/code-server:4.24.0  # LTS: Pinned for deterministic deployments
     container_name: code-server
     profiles:
       - apps

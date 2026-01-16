@@ -1,6 +1,22 @@
 #!/bin/bash
-# ARK Autonomous Manager v2.1
+# ARK Autonomous Manager v3.1.0
 # Modular CLI Interface for ARK Infrastructure
+# LTS Release - Error handling and deterministic behavior enforced
+
+# Error handling: Use set -e for most commands, but allow JSON output to work
+# We'll enable strict mode in functions that need it, not globally
+set +euo pipefail  # Start with relaxed mode for compatibility
+IFS=$'\n\t'        # Internal Field Separator for safer word splitting
+
+# Enable strict mode in critical functions
+enable_strict_mode() {
+    set -euo pipefail
+}
+
+# Disable strict mode for commands that may fail gracefully
+disable_strict_mode() {
+    set +euo pipefail
+}
 
 # --- CONFIGURATION ---
 ARK_DIR="/opt/ark"

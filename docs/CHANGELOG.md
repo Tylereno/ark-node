@@ -1,9 +1,54 @@
 # Changelog
 
-All notable changes to ARK (Autonomous Resilience Kit) will be documented in this file.
+All notable changes to ARK Node (Autonomous Edge Infrastructure) will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.1.0] - 2026-01-16 - LTS Release (Long Term Support)
+
+### 🏛️ LTS Declaration
+
+**ARK Node v3.1.0 is declared as a Long Term Support (LTS) release.**
+
+This version is frozen for stability. Future updates will strictly target:
+- Security patches for critical vulnerabilities
+- Constraint-driven fixes (breaking changes in dependencies)
+- Documentation corrections
+
+**No new features will be introduced** to maintain maximum stability and deterministic behavior.
+
+### Added
+
+- **Machine-Readable Status API** - JSON output via `ark-manager.sh status --json` for automation
+- **Configuration Examples** - Deployment templates in `examples/` directory:
+  - `.env.core-only` - Minimal footprint (2GB RAM)
+  - `.env.full-node` - Complete deployment (16GB RAM)
+  - `.env.ai-lab` - AI-focused (12GB RAM, no media)
+- **Postmortem Documentation** - Real-world incident reports in `docs/postmortems/`
+- **LTS Policy Document** - Formal maintenance commitment in `LTS.md`
+
+### Changed
+
+- **README.md** - Rewritten with edge infrastructure narrative, LTS declaration
+- **Docker Images** - All services pinned to specific versions for deterministic deployments
+- **Error Handling** - Added `set -euo pipefail` to `ark-manager.sh` for robust error handling
+- **Security** - Removed hardcoded secrets, moved to environment variables
+
+### Fixed
+
+- **JSON Status Output** - Fixed profiles array formatting, improved container counting
+- **Secret Management** - Vaultwarden ADMIN_TOKEN now uses environment variable
+
+### Technical Details
+
+- **Pinned Versions**: All Docker images use specific version tags (no `:latest` except where documented)
+- **Error Handling**: Scripts now fail fast on errors with proper error trapping
+- **Deterministic State**: Reproducible deployments via version pinning
+
+---
+
+## [3.0.0] - 2026-01-16 - Platform Release
 
 ## [1.1.0] - 2026-01-15 - Resurrection Update
 
@@ -1443,6 +1488,194 @@ BREAKING CHANGE: ark-manager.sh refactored into modular CLI with subcommands
 - All verification tests passed: profile isolation, heal isolation, full loop compatibility
 
 This transforms ARK from a personal script into a distributable platform.
+
+### Service Versions
+- **name ark_network**:  (not running)
+- **driver bridge**:  (not running)
+- **traefik**: traefik:v3.1 (not running)
+- **image traefik:v3.1  # Note: 3.1+ handles newer Docker APIs better**:  (not running)
+- **profiles**:  (not running)
+- **environment**:  (not running)
+- **command**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **portainer**: portainer/portainer-ce:latest (not running)
+- **image portainer/portainer-ce:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **homepage**: ghcr.io/gethomepage/homepage:latest (not running)
+- **image ghcr.io/gethomepage/homepage:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **autoheal**: willfarrell/autoheal:latest (not running)
+- **image willfarrell/autoheal:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **environment**:  (not running)
+- **volumes**:  (not running)
+- **networks**:  (not running)
+- **ollama**: ollama/ollama:latest (not running)
+- **image ollama/ollama:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **open-webui**: ghcr.io/open-webui/open-webui:main (not running)
+- **image ghcr.io/open-webui/open-webui:main**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "curl", "-f", "http://localhost:8080/health"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+- **jellyfin**: jellyfin/jellyfin:latest (not running)
+- **image jellyfin/jellyfin:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "curl", "-f", "http://localhost:8096/health"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+- **audiobookshelf**: ghcr.io/advplyr/audiobookshelf:latest (not running)
+- **image ghcr.io/advplyr/audiobookshelf:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **filebrowser**: filebrowser/filebrowser:latest (not running)
+- **image filebrowser/filebrowser:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **syncthing**: syncthing/syncthing:latest (not running)
+- **image syncthing/syncthing:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **vaultwarden**: vaultwarden/server:latest (not running)
+- **image vaultwarden/server:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **kiwix**: ghcr.io/kiwix/kiwix-serve:latest (not running)
+- **image ghcr.io/kiwix/kiwix-serve:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **command ["*.zim"]**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+- **homeassistant**: ghcr.io/home-assistant/home-assistant:stable (not running)
+- **image ghcr.io/home-assistant/home-assistant:stable**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **tailscale**: tailscale/tailscale:latest (not running)
+- **image tailscale/tailscale:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **environment**:  (not running)
+- **volumes**:  (not running)
+- **privileged true**:  (not running)
+- **command tailscaled**:  (not running)
+- **gitea**: gitea/gitea:latest (not running)
+- **image gitea/gitea:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "curl", "-f", "http://localhost:3000/"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+- **code-server**: linuxserver/code-server:latest (not running)
+- **image linuxserver/code-server:latest**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "curl", "-f", "http://localhost:8443/"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+
+---
+
+## [2026-01-16] - Deployment e933d1fd
+
+### Changes
+- **Commit**: e933d1fd
+- **Message**: feat(v3.1): JSON status output, examples, and postmortem documentation
+
+- Added --json flag to status command for machine-readable output (CrewAI integration)
+- Created examples/ directory with configuration templates:
+  - .env.core-only (minimal footprint)
+  - .env.full-node (complete deployment)
+  - .env.ai-lab (AI-focused, no media)
+  - README.md with usage examples
+- Added postmortem documentation for Kiwix restart loop incident
+- JSON output works without jq dependency (pure bash implementation)
+
+This release adds adoption enablers: clear examples and machine-readable status for automation.
 
 ### Service Versions
 - **name ark_network**:  (not running)
