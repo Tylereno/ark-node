@@ -44,34 +44,46 @@ ARK is a **sovereign operational technology (OT) layer** designed for the extrem
 
 ## Operational Scenarios
 
-### Direct Lithium Extraction (DLE)
+### 1. The "Sovereign Estate" (Aspen / Private Island)
 
-**Scenario:** Standalone extraction module in remote salt flat. Dust storm obstructs solar capacity and blocks satellite uplink for 72 hours.
-
-**ARK Response:**
-- Detects loss of backhaul. Switches to "Store-and-Forward" mode (local NVMe caching)
-- Detects voltage drop. Sheds non-essential visualization containers
-- Maintains 100% of sensor fidelity locally
-- Upon link restoration, autonomously bursts compressed historical data to HQ
-
-**Result:** Zero data loss. Zero downtime for extraction. Zero human intervention.
-
-### Subsurface Mining Operations
-
-**Scenario:** Remote mining site with unreliable grid power and intermittent satellite connectivity.
+**Scenario:** A high-net-worth property loses ISP connection during a winter storm. Cloud-based smart home systems fail.
 
 **ARK Response:**
-- Graceful degradation during power dips
-- Configuration survives brownouts
-- Autonomous recovery without human intervention
+- Acts as a local "digital utility," keeping Home Assistant, NVR Security, and climate control fully operational
+- Retains all user data on-premise (Privacy First)
 
-**Result:** Reduced truck rolls by 90%, eliminated configuration loss.
+**Outcome:** The physical asset remains intelligent and secure despite total grid isolation.
 
-### High-Latency Command (Space Analog)
+### 2. Precision Agriculture & Remote Sensing
 
-**Scenario:** Autonomous rover or habitat system operating with 20-minute light-speed delay.
+**Scenario:** A 5,000-acre farm needs to process drone imagery for crop stress but lacks 5G upload bandwidth.
 
-**ARK Response:** Acts as local "Mission Control." Hosts documentation, repair manuals, and decision logic, allowing autonomous fault resolution without Earth-side instructions.
+**ARK Response:**
+- Ingests heavy drone data locally via high-speed LAN
+- Uses local AI (Ollama) to analyze crop health on-site
+- Syncs only the lightweight "Action Report" to the cloud when connectivity permits
+
+**Outcome:** Real-time agronomy decisions without cloud dependency.
+
+### 3. Industrial Operations (DLE / Mining)
+
+**Scenario:** A remote extraction facility experiences a 72-hour satellite link outage due to weather.
+
+**ARK Response:**
+- Switches to "Store-and-Forward" mode, caching terabytes of sensor data to NVMe
+- Sheds non-essential visualization traffic to preserve power
+
+**Outcome:** Zero data loss. 100% regulatory compliance visibility upon reconnection.
+
+### 4. Utilities & Critical Infrastructure
+
+**Scenario:** A remote water treatment plant requires monitoring but cannot be exposed to the public internet.
+
+**ARK Response:**
+- Operates in an air-gapped configuration, collecting SCADA metrics locally
+- Provides a unidirectional "Data Diode" for secure reporting
+
+**Outcome:** Cyber-hardened monitoring immune to external DDoS or intrusion.
 
 ---
 
@@ -256,14 +268,16 @@ nano .env  # Add Sentry DSN, Datadog API key, etc.
 # Open: http://192.168.26.8:3000
 ```
 
-### What Just Happened?
+### Deployment Manifest
 
-You just deployed:
-- 16 containerized services across 3 profiles (including Datadog monitoring)
-- Autonomous infrastructure with self-healing capabilities
-- Enterprise telemetry (Sentry error tracking, Datadog metrics)
-- Zero-dependency boot sequence
-- Deterministic state management with pinned versions
+**System Status:** ONLINE
+
+The ARK Node platform has successfully initialized the following subsystems:
+
+- **Core Infrastructure:** Traefik (Edge Router), Portainer (Orchestration), Autoheal (Resilience)
+- **Application Layer:** 16 containerized services across core, apps, and media profiles
+- **Telemetry:** Datadog Agent and Sentry tracking active
+- **State:** Deterministic boot sequence complete. All services are pinned to stable version hashes
 
 **Next Steps:**
 1. Configure Tailscale for secure remote access
@@ -329,15 +343,19 @@ The deployment:
 
 ---
 
-## Applications
+## Target Applications
 
-ARK is designed for industrial operations requiring operational continuity in DDIL environments:
+ARK is engineered for any environment requiring sovereign, offline-capable infrastructure:
 
-- **Direct Lithium Extraction (DLE) facilities**
-- **Remote mining operations**
-- **Aerospace analog systems**
-- **Subsurface exploration platforms**
-- **Any operation requiring autonomous infrastructure**
+- **Sovereign Private Infrastructure:** High-net-worth estates, bunkers, and island properties requiring 100% uptime for security and automation independent of the grid.
+
+- **Precision Agriculture:** Large-acreage farms processing drone imagery and soil telemetry locally where cellular coverage is intermittent.
+
+- **Critical Utility Monitoring:** Air-gapped monitoring for water treatment, substations, and pipeline infrastructure.
+
+- **Industrial Resource Extraction:** Remote mining and DLE (Direct Lithium Extraction) operations requiring continuous data logging during satellite blackouts.
+
+- **Defense & Aerospace:** Mobile command units and space analog habitats operating with high-latency backhaul.
 
 ---
 
