@@ -56,7 +56,7 @@ jobs:
           script_stop: true
           debug: true  # Show detailed SSH connection logs
           proxy_timeout: 30s
-          command_timeout: 30m  # Give it half an hour for big Docker image pulls
+          command_timeout: 60m  # Give it 1 hour for large Docker image pulls (Ollama is 8.97GB)
           script: |
             set -e
             cd /opt/ark
@@ -109,14 +109,17 @@ jobs:
               echo "⚠ Warning: .env file not found"
             fi
             
-            # Pull latest Docker images
+            # Pull latest Docker images (quiet mode to keep connection stable)
             echo ""
-            echo "Pulling latest Docker images (this may take several minutes)..."
-            docker compose pull -q || echo "⚠ Some images failed to pull"
+            echo "Pulling latest Docker images (this may take 10-20 minutes for large images like Ollama)..."
+            docker compose pull -q || echo "⚠ Some images failed to pull, continuing..."
             
             # Restart services
             echo "Restarting services..."
             docker compose up -d --force-recreate --remove-orphans
+            
+            # Note: Ollama models are stored in /mnt/dock/data/models (persistent volume)
+            # They don't need to be re-downloaded on each deployment
             
             # Wait for services to stabilize
             echo "Waiting for services to stabilize..."
