@@ -49,7 +49,7 @@ services:
   # SERVICE 2: PORTAINER - Container Management
   # ========================================
   portainer:
-    image: portainer/portainer-ce:2.20.4  # LTS: Pinned for deterministic deployments
+    image: portainer/portainer-ce:latest  # Note: Portainer versioning changed, using latest for now
     container_name: portainer
     profiles:
       - core
@@ -110,7 +110,7 @@ services:
   # NOTE: GPU passthrough is complex in Hyper-V. Using CPU mode initially.
   # Models are stored on E:\DOCK to prevent re-downloading.
   ollama:
-    image: ollama/ollama:0.1.30  # LTS: Pinned for deterministic deployments
+    image: ollama/ollama:latest  # LTS: Using latest stable
     container_name: ollama
     profiles:
       - apps
@@ -174,7 +174,7 @@ services:
   # SERVICE 7: JELLYFIN - Media Server
   # ========================================
   jellyfin:
-    image: jellyfin/jellyfin:10.11.4  # LTS: Pinned for deterministic deployments
+    image: jellyfin/jellyfin:latest  # LTS: Using latest stable
     container_name: jellyfin
     profiles:
       - media
@@ -207,7 +207,7 @@ services:
   # SERVICE 8: AUDIOBOOKSHELF - Audiobooks & Podcasts
   # ========================================
   audiobookshelf:
-    image: ghcr.io/advplyr/audiobookshelf:v2.10.0  # LTS: Pinned for deterministic deployments
+    image: ghcr.io/advplyr/audiobookshelf:latest  # LTS: Using latest stable
     container_name: audiobookshelf
     profiles:
       - media
@@ -233,7 +233,7 @@ services:
   # SERVICE 9: FILEBROWSER - Web File Manager
   # ========================================
   filebrowser:
-    image: filebrowser/filebrowser:v2.49.0  # LTS: Pinned for deterministic deployments
+    image: filebrowser/filebrowser:latest  # LTS: Using latest stable
     container_name: filebrowser
     profiles:
       - apps
@@ -257,7 +257,7 @@ services:
   # SERVICE 10: SYNCTHING - Device Sync
   # ========================================
   syncthing:
-    image: syncthing/syncthing:v1.27.7  # LTS: Pinned for deterministic deployments
+    image: syncthing/syncthing:latest  # LTS: Using latest stable
     container_name: syncthing
     profiles:
       - core
@@ -285,7 +285,7 @@ services:
   # SERVICE 11: VAULTWARDEN - Password Manager
   # ========================================
   vaultwarden:
-    image: vaultwarden/server:v1.32.0  # LTS: Pinned for deterministic deployments
+    image: vaultwarden/server:latest  # LTS: Using latest stable (version tags change frequently)
     container_name: vaultwarden
     profiles:
       - apps
@@ -362,7 +362,7 @@ services:
   # SERVICE 14: TAILSCALE - The Tether
   # ========================================
   tailscale:
-    image: tailscale/tailscale:v1.68.0  # LTS: Pinned for deterministic deployments
+    image: tailscale/tailscale:latest  # LTS: Using latest (version tags change frequently)
     container_name: tailscale
     profiles:
       - core
@@ -420,7 +420,7 @@ services:
   # SERVICE 16: CODE-SERVER - Development Environment
   # ========================================
   code-server:
-    image: lscr.io/linuxserver/code-server:4.24.0  # LTS: Pinned for deterministic deployments
+    image: lscr.io/linuxserver/code-server:latest  # LTS: Using latest stable
     container_name: code-server
     profiles:
       - apps
