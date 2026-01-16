@@ -23,19 +23,17 @@ networks:
 # ========================================
 services:
   traefik:
-    image: traefik:v3.0
+    image: traefik:v3.1  # Note: 3.1+ handles newer Docker APIs better
     container_name: traefik
-    restart: unless-stopped
+    environment:
+      - DOCKER_API_VERSION=1.45  # Matches your new Docker 29.1 version
     command:
-      - "--api.dashboard=true"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      - "--log.level=INFO"
     ports:
       - "80:80"
-      - "8080:8080"  # Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
