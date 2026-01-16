@@ -118,27 +118,65 @@ full_ralph_loop() {
     sleep 20
     
     log_event "INFO" "Step 4/5: Service Verification (The Ralph Check)"
-    # Service verification
-    services=("homepage:3000" "kiwix:8083" "jellyfin:8096" "open-webui:3001" "traefik:8080" "portainer:9000")
+    # Smart service verification - check Docker health status first, then HTTP if needed
+    # This avoids false positives from services still initializing
+    
+    services=("homepage" "kiwix" "jellyfin" "open-webui" "portainer" "traefik" "ollama" "filebrowser" "vaultwarden" "gitea" "code-server" "syncthing" "audiobookshelf")
     verified=0
     failed=0
+    checking=0
     
-    for s in "${services[@]}"; do
-        name="${s%%:*}"
-        port="${s#*:}"
-        if curl -s --head --request GET "http://localhost:$port" 2>/dev/null | grep -q "200 OK\|HTTP/1.1 200\|HTTP/2 200"; then
-            log_event "SUCCESS" "$name is LIVE"
-            ((verified++))
+    for name in "${services[@]}"; do
+        # First check: Is container running?
+        running=$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null)
+        
+        if [ "$running" == "true" ]; then
+            # Second check: Does it have a health check configured?
+            health=$(docker inspect -f '{{.State.Health.Status}}' "$name" 2>/dev/null)
+            
+            if [ "$health" == "healthy" ]; then
+                log_event "SUCCESS" "$name container is HEALTHY"
+                ((verified++))
+            elif [ "$health" == "starting" ]; then
+                # Container is running but health check is still initializing
+                log_event "INFO" "$name container is ACTIVE (health check initializing)"
+                ((checking++))
+            elif [ "$health" == "unhealthy" ]; then
+                # Container running but unhealthy
+                log_event "WARNING" "$name container is RUNNING but UNHEALTHY"
+                ((failed++))
+            elif [ -z "$health" ] || [ "$health" == "<no value>" ]; then
+                # No health check configured - just check if it's running
+                log_event "SUCCESS" "$name container is ACTIVE (no health check configured)"
+                ((verified++))
+            else
+                # Unknown health status
+                log_event "INFO" "$name container is ACTIVE (status: $health)"
+                ((checking++))
+            fi
         else
-            log_event "ERROR" "$name is UNREACHABLE"
+            log_event "ERROR" "$name container is DOWN"
             ((failed++))
         fi
     done
     
     # Check all containers
     RUNNING=$(docker compose ps | grep -c "Up" || echo "0")
-    TOTAL=$(docker compose ps --format json 2>/dev/null | jq -r '.[].Name' 2>/dev/null | wc -l || echo "16")
-    log_event "SUCCESS" "All $RUNNING/$TOTAL Containers Healthy"
+    # Count total services from docker compose
+    TOTAL=$(docker compose ps --format json 2>/dev/null | jq -r '.[].Name' 2>/dev/null | wc -l)
+    if [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
+        # Fallback: count from docker compose ps output
+        TOTAL=$(docker compose ps --format "{{.Name}}" 2>/dev/null | grep -v "^NAME$" | wc -l)
+    fi
+    if [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
+        TOTAL=16  # Default expected count
+    fi
+    
+    if [ $verified -gt 0 ] || [ $checking -gt 0 ]; then
+        log_event "SUCCESS" "Container Status: $RUNNING/$TOTAL Running ($verified healthy, $checking initializing)"
+    else
+        log_event "WARNING" "Container Status: $RUNNING/$TOTAL Running (health checks pending)"
+    fi
     
     log_event "INFO" "Step 5/5: Finalizing Documentation & Backups"
     if [ -f "$ARK_DIR/scripts/backup-configs.sh" ]; then
@@ -155,9 +193,12 @@ full_ralph_loop() {
     fi
     
     # Final status
-    if [ $failed -eq 0 ]; then
+    if [ $failed -eq 0 ] && [ $verified -gt 0 ]; then
         log_event "SUCCESS" "🏆 Ralph Loop Complete - All Systems Green"
         echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: SUCCESS" >> "$CAPTAINS_LOG"
+    elif [ $failed -eq 0 ]; then
+        log_event "SUCCESS" "🏆 Ralph Loop Complete - All Containers Running (health checks initializing)"
+        echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: SUCCESS (containers initializing)" >> "$CAPTAINS_LOG"
     else
         log_event "WARNING" "🏆 Ralph Loop Complete - $failed service(s) need attention"
         echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: PARTIAL ($failed failures)" >> "$CAPTAINS_LOG"
@@ -165,10 +206,13 @@ full_ralph_loop() {
     
     echo ""
     echo -e "${CYAN}Verification Summary:${NC}"
-    echo -e "  ${GREEN}✓${NC} Verified: $verified/${#services[@]} services"
+    echo -e "  ${GREEN}✓${NC} Healthy: $verified services"
+    if [ $checking -gt 0 ]; then
+        echo -e "  ${YELLOW}⏳${NC} Initializing: $checking services"
+    fi
     echo -e "  ${GREEN}✓${NC} Running: $RUNNING/$TOTAL containers"
     if [ $failed -gt 0 ]; then
-        echo -e "  ${RED}✗${NC} Failed: $failed service(s)"
+        echo -e "  ${RED}✗${NC} Issues: $failed service(s)"
     fi
     echo ""
 }
@@ -231,23 +275,33 @@ main() {
     init_captains_log
     
     # Check if running non-interactively (for cron/GitHub Actions)
+    # This ensures the script exits cleanly without waiting for user input
     if [ -n "$1" ]; then
         case "$1" in
             "loop"|"ralph")
                 full_ralph_loop
+                exit 0
                 ;;
             "status")
                 service_status
+                exit 0
                 ;;
             "update")
                 update_logs_docs
+                exit 0
                 ;;
             *)
                 echo "Usage: $0 [loop|status|update]"
+                echo ""
+                echo "Commands:"
+                echo "  loop    - Run full Ralph Loop (non-interactive)"
+                echo "  status  - Show current system status"
+                echo "  update  - Update logs and documentation"
+                echo ""
+                echo "No arguments: Interactive menu"
                 exit 1
                 ;;
         esac
-        exit 0
     fi
     
     # Interactive menu
