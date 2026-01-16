@@ -2,7 +2,7 @@
 
 **"Your Digital Life, Untethered"**
 
-**Version:** 1.1.0  
+**Version:** 1.2.0  
 **Platform:** Nomad Node  
 **Status:** Production Ready
 
@@ -10,33 +10,145 @@
 
 ## What is ARK?
 
-ARK (Autonomous Resilience Kit) is a self-hosted, offline-capable software stack built for **digital nomads, off-grid enthusiasts, and privacy advocates**. It's your complete digital infrastructure that works anywhere—with or without internet.
+ARK (Autonomous Resilience Kit) is a self-hosted, offline-capable infrastructure platform designed for **unstable network environments, zero-trust deployments, and operational survivability**. It's a cohesive infrastructure stack that provides AI capabilities, media services, file management, offline knowledge, and automation—all running autonomously with self-healing capabilities.
 
-Think of it as your **Internet Jerry Can**: a portable, self-contained technology platform that provides AI capabilities, media services, file management, offline knowledge, and automation in a single, integrated deployment.
+Think of it as your **Internet Jerry Can**: a portable, self-contained technology platform that works anywhere—with or without internet.
 
-## Why ARK?
+---
 
-**Problem:** Cloud services require constant connectivity, monthly fees, and hand over your data to Big Tech.
+## Who This Is For
 
-**Solution:** ARK gives you everything you need—AI, media, files, automation—running on YOUR hardware, working offline, with zero subscriptions.
+ARK is built for operators who need infrastructure that survives real-world conditions:
 
-Perfect for:
-- 🌍 **Digital Nomads** - Unreliable internet? No problem.
-- 🚐 **Off-Grid Living** - Van-life, RV travel, boat dwelling
-- 🔒 **Privacy Advocates** - Your data stays yours
-- 💡 **Self-Hosters** - Learn, tinker, control your tech
+### ✔ Ideal Use Cases
 
-### The Stack
+- **🌍 Digital Nomads** - Unreliable internet? Power interruptions? ARK keeps running
+- **🚐 Off-Grid Living** - Van-life, RV travel, boat dwelling, remote cabins
+- **🔒 Privacy Advocates** - Your data stays yours, no cloud dependencies
+- **⚡ Field Operations** - Disaster response, field research, remote construction crews
+- **🛡️ Zero-Trust Environments** - Identity-first networking via Tailscale mesh
+- **💡 Self-Hosters** - Developers who want zero-maintenance personal infrastructure
 
-**16 containerized services** providing:
-- 🤖 **AI & LLM**: Ollama + Open WebUI (run models locally)
-- 📺 **Media**: Jellyfin, Audiobookshelf (your personal Netflix/Spotify)
-- 📁 **Storage**: FileBrowser, Syncthing, Vaultwarden (files + passwords)
-- 🏠 **Automation**: Home Assistant (IoT control)
-- 🌐 **Networking**: Traefik reverse proxy, Tailscale VPN (secure access)
-- 🔧 **Management**: Portainer, Homepage dashboard (easy control)
-- 📚 **Knowledge**: Kiwix (90GB Wikipedia + medical + tech references, offline)
-- 💻 **Development**: Gitea (Git hosting), Code-Server (VS Code in browser)
+### ✖ Not Recommended For
+
+- **Beginners** - Requires Docker, networking, and Linux familiarity
+- **Public Multi-Tenant Hosting** - Designed for single-user or small team use
+- **High-Compliance Enterprise** - Not certified for HIPAA, SOC2, or similar requirements
+- **High-Performance Workloads** - Optimized for resilience, not raw throughput
+- **Cloud-Native Deployments** - Built for edge/offline scenarios, not cloud-first
+
+---
+
+## Architecture
+
+ARK implements a three-layer separation model:
+
+### Blueprints (Git) → State (NVMe) → Tunnel (Tailscale)
+
+```mermaid
+graph TB
+    subgraph "Blueprints Layer"
+        Git[Git Repository<br/>Immutable Intent]
+    end
+    
+    subgraph "State Layer"
+        Configs[Local Configs<br/>/opt/ark/configs]
+        Data[Persistent Data<br/>/mnt/dock]
+    end
+    
+    subgraph "Tunnel Layer"
+        Tailscale[Tailscale Mesh<br/>Identity-First Networking]
+    end
+    
+    subgraph "Services"
+        Core[Core Services<br/>Traefik, Portainer, etc.]
+        Apps[Application Services<br/>Ollama, Gitea, etc.]
+        Media[Media Services<br/>Jellyfin, Audiobookshelf, etc.]
+    end
+    
+    Git -->|Sync| Configs
+    Configs --> Core
+    Configs --> Apps
+    Configs --> Media
+    Data --> Apps
+    Data --> Media
+    Tailscale -->|Secure Access| Core
+    Tailscale -->|Secure Access| Apps
+    Tailscale -->|Secure Access| Media
+```
+
+**Key Principles:**
+- **Blueprints** (Git): Immutable infrastructure definitions, version-controlled
+- **State** (NVMe): Heavy, persistent data (SQLite DBs, media, models) stored locally
+- **Tunnel** (Tailscale): Identity-first networking, no exposed ports, zero-trust access
+
+This separation ensures:
+- Infrastructure can be rebuilt from Git without losing data
+- State survives blueprint changes
+- Network access is identity-based, not IP-based
+
+---
+
+## Service Catalog
+
+ARK organizes services into three profiles using Docker Compose profiles:
+
+### Core Services (Required)
+
+Essential infrastructure that provides the foundation:
+
+| Service | Port | Purpose | Profile |
+|---------|------|---------|---------|
+| **Traefik** | 80 | Reverse proxy & routing | `core` |
+| **Tailscale** | Host | Secure mesh networking | `core` |
+| **Autoheal** | - | Container watchdog | `core` |
+| **Homepage** | 3000 | Main dashboard | `core` |
+| **Portainer** | 9000 | Container management | `core` |
+| **Syncthing** | 8384 | Device file sync | `core` |
+
+**Deploy core only:**
+```bash
+COMPOSE_PROFILES=core docker compose up -d
+```
+
+### Application Services (Optional)
+
+Development tools, AI, and productivity apps:
+
+| Service | Port | Purpose | Profile |
+|---------|------|---------|---------|
+| **Ollama** | 11434 | Local LLM API | `apps` |
+| **Open WebUI** | 3001 | AI chat interface | `apps` |
+| **Kiwix** | 8083 | Offline Wikipedia | `apps` |
+| **Gitea** | 3002 | Git repository hosting | `apps` |
+| **Code-Server** | 8443 | VS Code in browser | `apps` |
+| **Vaultwarden** | 8082 | Password manager | `apps` |
+| **FileBrowser** | 8081 | Web file manager | `apps` |
+
+**Deploy apps only:**
+```bash
+COMPOSE_PROFILES=core,apps docker compose up -d
+```
+
+### Media Services (Optional)
+
+Entertainment and home automation:
+
+| Service | Port | Purpose | Profile |
+|---------|------|---------|---------|
+| **Jellyfin** | 8096 | Media server | `media` |
+| **Audiobookshelf** | 13378 | Audiobooks & podcasts | `media` |
+| **Home Assistant** | 8123 | IoT automation | `media` |
+
+**Deploy media only:**
+```bash
+COMPOSE_PROFILES=core,media docker compose up -d
+```
+
+**Deploy everything (default):**
+```bash
+COMPOSE_PROFILES=core,apps,media docker compose up -d
+```
 
 ---
 
@@ -51,8 +163,8 @@ Perfect for:
 git clone <your-repo-url> /opt/ark
 cd /opt/ark
 
-# 2. Deploy the stack
-docker compose up -d
+# 2. Deploy the stack (all profiles)
+./scripts/ark-manager.sh deploy
 
 # 3. Access your dashboard
 # Open: http://192.168.26.8:3000
@@ -63,7 +175,7 @@ docker compose up -d
 ### What Just Happened?
 
 You just deployed:
-- ✅ 16 containerized services
+- ✅ 16 containerized services across 3 profiles
 - ✅ AI capabilities (Ollama + Open WebUI)
 - ✅ Media server (Jellyfin + Audiobookshelf)
 - ✅ File management (FileBrowser + Syncthing)
@@ -82,49 +194,86 @@ You just deployed:
 
 ---
 
-## Documentation
+## The Ralph Loop: Autonomous Operations
 
-**📚 [Complete Documentation](/docs/README.md)**
+ARK includes a modular management system called the **Ralph Loop** that handles deployment, health checks, healing, and documentation.
 
-- **[Quickstart Guide](/docs/getting-started/QUICKSTART.md)** - Get running in 10 minutes
-- **[Installation Guide](/docs/getting-started/INSTALLATION.md)** - Platform-specific setup
-- **[User Guide](/docs/guides/USER_GUIDE.md)** - Service walkthroughs  
-- **[Troubleshooting](/docs/reference/TROUBLESHOOTING.md)** - Fix common issues
-- **[FAQ](/docs/reference/FAQ.md)** - Frequently asked questions
+### Modular Commands
+
+```bash
+# Full autonomous loop (deploy → audit → heal → document)
+./scripts/ark-manager.sh loop
+
+# Individual commands
+./scripts/ark-manager.sh deploy    # Sync blueprints, pull images, start services
+./scripts/ark-manager.sh audit     # Health check all services
+./scripts/ark-manager.sh heal      # Restart unhealthy containers
+./scripts/ark-manager.sh document  # Backup configs and update logs
+./scripts/ark-manager.sh status    # View current system state
+```
+
+### Self-Healing in Action
+
+ARK's autonomous healing system detects and recovers from failures automatically. Here's how it works:
+
+**Example Failure Scenario:**
+
+1. **Detection**: During an audit, Ralph detects that the `jellyfin` container is in an "unhealthy" state:
+   ```
+   ❌ jellyfin container is RUNNING but UNHEALTHY
+   ```
+
+2. **Healing**: The heal command automatically restarts the container:
+   ```
+   ⚠️  jellyfin container is UNHEALTHY - attempting restart
+   ✅ jellyfin container restarted
+   ```
+
+3. **Verification**: After healing, Ralph re-audits to confirm recovery:
+   ```
+   ✅ jellyfin container is ACTIVE (health check initializing)
+   ```
+
+4. **Documentation**: The entire cycle is logged to the Captain's Log for postmortem analysis.
+
+**Key Features:**
+- **Docker-native health checks**: Uses container health status, not HTTP guessing
+- **State-aware auditing**: Distinguishes "Starting" vs "Dead" vs "Healthy"
+- **Automatic recovery**: Restarts unhealthy containers without human intervention
+- **Comprehensive logging**: All events logged for troubleshooting
+
+This is not overengineering—this is operational maturity for environments where you can't always be present to fix issues manually.
 
 ---
 
-## Architecture
+## Storage Strategy
 
-### Storage Strategy
-- **Local SSD** (`/opt/ark/configs`): SQLite databases, configs
-- **CIFS Mount** (`/mnt/dock`): Media files, AI models, large data
+ARK uses a two-tier storage approach:
 
-### Network
-- **Static IP**: 192.168.26.8
-- **Domain**: *.ark.local (via local DNS)
-- **Bridge network**: ark_network
+- **Local SSD** (`/opt/ark/configs`): SQLite databases, service configs, lightweight state
+- **CIFS Mount** (`/mnt/dock`): Media files, AI models, large data, persistent state
 
-### Services
+This separation ensures:
+- Critical configs survive network mount failures
+- Heavy data can be stored on network storage
+- SQLite databases avoid corruption from network filesystems
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| Homepage | 3000 | Main dashboard |
-| Open WebUI | 3001 | AI chat interface |
-| Gitea | 3002 | Git repository hosting |
-| Traefik | 8080 | Reverse proxy dashboard |
-| FileBrowser | 8081 | File manager |
-| Vaultwarden | 8082 | Password manager |
-| Kiwix | 8083 | Offline Wikipedia |
-| Jellyfin | 8096 | Media server |
-| Home Assistant | 8123 | Automation |
-| Syncthing | 8384 | File sync |
-| Portainer | 9000 | Container management |
-| Ollama | 11434 | LLM API |
-| Audiobookshelf | 13378 | Audiobooks |
-| Code-Server | 8443 | VS Code in browser |
-| Gitea SSH | 2222 | Git SSH access |
-| Tailscale | Host | Secure remote access |
+---
+
+## Network Architecture
+
+- **Static IP**: 192.168.26.8 (configurable)
+- **Domain**: *.ark.local (via local DNS or hosts file)
+- **Bridge network**: `ark_network` (isolated Docker network)
+- **Tailscale Mesh**: Identity-first remote access, no exposed ports
+
+### Remote Access via Tailscale
+
+ARK uses Tailscale for secure, zero-trust remote access:
+
+1. **No exposed ports**: Services are only accessible via Tailscale mesh
+2. **Identity-based**: Access controlled by Tailscale ACLs, not firewall rules
+3. **Automatic routing**: Works from anywhere, no VPN configuration needed
 
 ---
 
@@ -151,14 +300,36 @@ After deployment, complete these setup wizards:
 
 ---
 
-## Known Issues
+## CI/CD Integration
 
-- **FileBrowser**: Auth database requires reset on first run
-- **Kiwix**: Requires manual .zim file downloads
-- **Portainer**: Requires 12+ character password
-- **Tailscale**: May require authentication via `docker exec`
+ARK supports automated deployments via GitHub Actions using Tailscale:
 
-See `CHANGELOG.md` for complete list.
+```yaml
+# .github/workflows/deploy.yml
+- name: Deploy ARK
+  run: |
+    ssh ark-node "./scripts/ark-manager.sh loop"
+```
+
+The deployment:
+- Enters the Tailscale mesh (no exposed ports)
+- Targets a specific node
+- Runs the full Ralph Loop
+- Fails the commit if services don't come up healthy
+
+This is real CI, not theater.
+
+---
+
+## Documentation
+
+**📚 [Complete Documentation](/docs/README.md)**
+
+- **[Quickstart Guide](/docs/getting-started/QUICKSTART.md)** - Get running in 10 minutes
+- **[Installation Guide](/docs/getting-started/INSTALLATION.md)** - Platform-specific setup
+- **[Security Setup](/docs/guides/SECURITY_SETUP.md)** - Tailscale, ACLs, hardening
+- **[Port Forwarding](/docs/guides/PORT_FORWARDING_SETUP.md)** - Network configuration
+- **[GitHub Actions Setup](/docs/guides/GITHUB_ACTIONS_SETUP.md)** - CI/CD integration
 
 ---
 
@@ -166,24 +337,17 @@ See `CHANGELOG.md` for complete list.
 
 ```
 /opt/ark/
-├── docker-compose.yml       # Main stack definition
-├── deploy.sh               # Deployment script
-├── configs/                # Service configurations
+├── docker-compose.yml       # Main stack definition (with profiles)
+├── scripts/
+│   └── ark-manager.sh      # Modular CLI manager (deploy, audit, heal, document)
+├── configs/                # Service configurations (local SSD)
 │   ├── homepage/          # Dashboard config
 │   ├── portainer/         # Container management data
 │   ├── jellyfin/          # Media server config
 │   ├── gitea/             # Git server config
-│   ├── code-server/       # VS Code config
 │   └── ...
-├── scripts/               # Utility scripts
-│   ├── download-wikipedia.sh
-│   ├── download-survival.sh
-│   ├── download-maps.sh
-│   ├── download-books.sh
-│   ├── check-downloads.sh
-│   └── RESURRECTION.sh    # Service deployment script
-├── VERSION                # Semantic version
-├── CHANGELOG.md           # Version history
+├── docs/                   # Documentation
+├── VERSION                 # Semantic version
 └── README.md              # This file
 
 /mnt/dock/                 # CIFS shared storage
@@ -191,44 +355,9 @@ See `CHANGELOG.md` for complete list.
 │   ├── media/            # Media files
 │   ├── models/           # Ollama AI models
 │   └── sync/             # Syncthing shared folders
-└── docs/                  # Complete documentation (42 files)
 ```
 
 ---
-
-## Contributing
-
-See `CONTRIBUTING.md` for guidelines.
-
----
-
-## Project Nomad
-
-**ARK** is the software component of **Project Nomad**, a mission to provide resilient, off-grid capable computing for digital nomads and remote locations.
-
-- **Project Nomad**: The mission (off-grid resilience)
-- **ARK**: The software (this repository)
-- **Nomad Node**: The hardware platform (VM/physical device)
-
-Learn more: [tylereno.me](https://tylereno.me)
-
----
-
-## License
-
-See `LICENSE` file for details.
-
----
-
-## Support
-
-- **Documentation**: `/mnt/dock/docs/`
-- **Issues**: GitHub Issues
-- **Discussions**: GitHub Discussions
-
----
-
-**Built with ❤️ for digital nomads everywhere.**
 
 ## Content Download Scripts
 
@@ -274,3 +403,50 @@ nohup /opt/ark/scripts/download-wikipedia.sh --unattended > /tmp/wikipedia-downl
 # Check progress
 tail -f /tmp/wikipedia-download.log
 ```
+
+---
+
+## Known Issues
+
+- **FileBrowser**: Auth database requires reset on first run
+- **Kiwix**: Requires manual .zim file downloads
+- **Portainer**: Requires 12+ character password
+- **Tailscale**: May require authentication via `docker exec`
+
+See `CHANGELOG.md` for complete list.
+
+---
+
+## Contributing
+
+See `CONTRIBUTING.md` for guidelines.
+
+---
+
+## Project Nomad
+
+**ARK** is the software component of **Project Nomad**, a mission to provide resilient, off-grid capable computing for digital nomads and remote locations.
+
+- **Project Nomad**: The mission (off-grid resilience)
+- **ARK**: The software (this repository)
+- **Nomad Node**: The hardware platform (VM/physical device)
+
+Learn more: [tylereno.me](https://tylereno.me)
+
+---
+
+## License
+
+See `LICENSE` file for details.
+
+---
+
+## Support
+
+- **Documentation**: `/mnt/dock/docs/`
+- **Issues**: GitHub Issues
+- **Discussions**: GitHub Discussions
+
+---
+
+**Built with ❤️ for digital nomads everywhere.**

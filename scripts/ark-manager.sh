@@ -1,6 +1,6 @@
 #!/bin/bash
-# ARK Autonomous Manager v2.0
-# The "Ralph Loop" Orchestrator
+# ARK Autonomous Manager v2.1
+# Modular CLI Interface for ARK Infrastructure
 
 # --- CONFIGURATION ---
 ARK_DIR="/opt/ark"
@@ -8,6 +8,8 @@ LOG_DIR="$ARK_DIR/logs"
 DOCS_DIR="$ARK_DIR/docs"
 CAPTAINS_LOG="$DOCS_DIR/CAPTAINS_LOG.md"
 CHANGELOG="$DOCS_DIR/CHANGELOG.md"
+# Default profiles: all services (can be overridden with COMPOSE_PROFILES env var)
+COMPOSE_PROFILES="${COMPOSE_PROFILES:-core,apps,media}"
 mkdir -p $LOG_DIR
 mkdir -p $DOCS_DIR
 
@@ -49,20 +51,11 @@ log_event() {
     esac
 }
 
-full_ralph_loop() {
-    clear
-    echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${GREEN}🚀 Starting Full Ralph Loop...${NC}${CYAN}                                    ║${NC}"
-    echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-    
-    # Initialize log entry
-    DEPLOYMENT_DATE=$(date '+%Y-%m-%d')
-    echo "" >> "$CAPTAINS_LOG"
-    echo "## Deployment Cycle: $DEPLOYMENT_DATE" >> "$CAPTAINS_LOG"
-    echo "* $(date '+%H:%M:%S'): 🚀 Started Full Ralph Loop" >> "$CAPTAINS_LOG"
-    
-    log_event "INFO" "Step 1/5: Syncing Blueprints from GitHub"
+# --- MODULAR COMMANDS ---
+
+# cmd_deploy: Sync blueprints, verify assets, pull images, and deploy services
+cmd_deploy() {
+    log_event "INFO" "Syncing Blueprints from GitHub"
     cd "$ARK_DIR"
     if [ -d .git ]; then
         if git fetch origin main 2>&1 | tee -a "$LOG_DIR/manager.log"; then
@@ -82,7 +75,7 @@ full_ralph_loop() {
         log_event "WARNING" "Not a git repository. Skipping git sync."
     fi
     
-    log_event "INFO" "Step 2/5: Verifying Persistent Large Files"
+    log_event "INFO" "Verifying Persistent Large Files"
     # Check Kiwix ZIM files
     if find /mnt/dock/data/media/kiwix -name "*.zim" -type f 2>/dev/null | grep -q .; then
         ZIM_COUNT=$(find /mnt/dock/data/media/kiwix -name "*.zim" -type f 2>/dev/null | wc -l)
@@ -98,30 +91,33 @@ full_ralph_loop() {
         log_event "INFO" "Ollama models directory empty or missing."
     fi
     
-    log_event "INFO" "Step 3/5: Deploying Infrastructure"
-    if docker compose pull -q 2>&1 | tee -a "$LOG_DIR/manager.log"; then
+    log_event "INFO" "Pulling Docker images (profiles: $COMPOSE_PROFILES)"
+    if COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose pull -q 2>&1 | tee -a "$LOG_DIR/manager.log"; then
         log_event "SUCCESS" "Docker images pulled successfully"
     else
         log_event "WARNING" "Some images failed to pull. Continuing..."
     fi
     
-    if docker compose up -d --remove-orphans 2>&1 | tee -a "$LOG_DIR/manager.log"; then
+    log_event "INFO" "Deploying Infrastructure (profiles: $COMPOSE_PROFILES)"
+    if COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose up -d --remove-orphans 2>&1 | tee -a "$LOG_DIR/manager.log"; then
         log_event "SUCCESS" "Infrastructure deployment initiated"
     else
         log_event "ERROR" "Infrastructure deployment failed"
-        echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: FAILED" >> "$CAPTAINS_LOG"
         return 1
     fi
     
     # Wait for services to stabilize
     log_event "INFO" "Waiting for services to stabilize (20s)..."
     sleep 20
-    
-    log_event "INFO" "Step 4/5: Service Verification (The Ralph Check)"
+}
+
+# cmd_audit: Smart service verification using Docker health checks
+cmd_audit() {
+    log_event "INFO" "Service Verification (The Ralph Check)"
     # Smart service verification - check Docker health status first, then HTTP if needed
     # This avoids false positives from services still initializing
     
-    services=("homepage" "kiwix" "jellyfin" "open-webui" "portainer" "traefik" "ollama" "filebrowser" "vaultwarden" "gitea" "code-server" "syncthing" "audiobookshelf")
+    services=("homepage" "kiwix" "jellyfin" "open-webui" "portainer" "traefik" "ollama" "filebrowser" "vaultwarden" "gitea" "code-server" "syncthing" "audiobookshelf" "homeassistant")
     verified=0
     failed=0
     checking=0
@@ -161,12 +157,12 @@ full_ralph_loop() {
     done
     
     # Check all containers
-    RUNNING=$(docker compose ps | grep -c "Up" || echo "0")
+    RUNNING=$(COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps | grep -c "Up" || echo "0")
     # Count total services from docker compose
-    TOTAL=$(docker compose ps --format json 2>/dev/null | jq -r '.[].Name' 2>/dev/null | wc -l)
+    TOTAL=$(COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps --format json 2>/dev/null | jq -r '.[].Name' 2>/dev/null | wc -l)
     if [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
         # Fallback: count from docker compose ps output
-        TOTAL=$(docker compose ps --format "{{.Name}}" 2>/dev/null | grep -v "^NAME$" | wc -l)
+        TOTAL=$(COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps --format "{{.Name}}" 2>/dev/null | grep -v "^NAME$" | wc -l)
     fi
     if [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
         TOTAL=16  # Default expected count
@@ -178,7 +174,69 @@ full_ralph_loop() {
         log_event "WARNING" "Container Status: $RUNNING/$TOTAL Running (health checks pending)"
     fi
     
-    log_event "INFO" "Step 5/5: Finalizing Documentation & Backups"
+    echo ""
+    echo -e "${CYAN}Audit Summary:${NC}"
+    echo -e "  ${GREEN}✓${NC} Healthy: $verified services"
+    if [ $checking -gt 0 ]; then
+        echo -e "  ${YELLOW}⏳${NC} Initializing: $checking services"
+    fi
+    echo -e "  ${GREEN}✓${NC} Running: $RUNNING/$TOTAL containers"
+    if [ $failed -gt 0 ]; then
+        echo -e "  ${RED}✗${NC} Issues: $failed service(s)"
+    fi
+    echo ""
+    
+    # Return failure count for use by heal command
+    return $failed
+}
+
+# cmd_heal: Check for unhealthy containers and restart them
+cmd_heal() {
+    log_event "INFO" "Checking for unhealthy containers"
+    
+    services=("homepage" "kiwix" "jellyfin" "open-webui" "portainer" "traefik" "ollama" "filebrowser" "vaultwarden" "gitea" "code-server" "syncthing" "audiobookshelf" "homeassistant")
+    healed=0
+    failed=0
+    
+    for name in "${services[@]}"; do
+        running=$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null)
+        health=$(docker inspect -f '{{.State.Health.Status}}' "$name" 2>/dev/null)
+        
+        if [ "$running" != "true" ]; then
+            log_event "WARNING" "$name container is DOWN - attempting restart"
+            if docker restart "$name" 2>&1 | tee -a "$LOG_DIR/manager.log"; then
+                log_event "SUCCESS" "$name container restarted"
+                ((healed++))
+            else
+                log_event "ERROR" "$name container restart failed"
+                ((failed++))
+            fi
+        elif [ "$health" == "unhealthy" ]; then
+            log_event "WARNING" "$name container is UNHEALTHY - attempting restart"
+            if docker restart "$name" 2>&1 | tee -a "$LOG_DIR/manager.log"; then
+                log_event "SUCCESS" "$name container restarted"
+                ((healed++))
+            else
+                log_event "ERROR" "$name container restart failed"
+                ((failed++))
+            fi
+        fi
+    done
+    
+    if [ $healed -gt 0 ]; then
+        log_event "SUCCESS" "Healed $healed container(s)"
+        log_event "INFO" "Waiting 10s for restarted containers to initialize..."
+        sleep 10
+    elif [ $failed -gt 0 ]; then
+        log_event "WARNING" "Failed to heal $failed container(s)"
+    else
+        log_event "SUCCESS" "All containers healthy - no healing needed"
+    fi
+}
+
+# cmd_document: Run backups and update documentation
+cmd_document() {
+    log_event "INFO" "Finalizing Documentation & Backups"
     if [ -f "$ARK_DIR/scripts/backup-configs.sh" ]; then
         if "$ARK_DIR/scripts/backup-configs.sh" > /dev/null 2>&1; then
             log_event "SUCCESS" "Configuration backup created"
@@ -192,27 +250,53 @@ full_ralph_loop() {
         "$ARK_DIR/scripts/update-changelog.sh" > /dev/null 2>&1 || true
     fi
     
-    # Final status
-    if [ $failed -eq 0 ] && [ $verified -gt 0 ]; then
-        log_event "SUCCESS" "🏆 Ralph Loop Complete - All Systems Green"
-        echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: SUCCESS" >> "$CAPTAINS_LOG"
-    elif [ $failed -eq 0 ]; then
-        log_event "SUCCESS" "🏆 Ralph Loop Complete - All Containers Running (health checks initializing)"
-        echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: SUCCESS (containers initializing)" >> "$CAPTAINS_LOG"
-    else
-        log_event "WARNING" "🏆 Ralph Loop Complete - $failed service(s) need attention"
-        echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: PARTIAL ($failed failures)" >> "$CAPTAINS_LOG"
+    log_event "SUCCESS" "Documentation sync complete"
+}
+
+# cmd_loop: Full Ralph Loop - deploy, audit, heal if needed, document
+cmd_loop() {
+    clear
+    echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC} ${GREEN}🚀 Starting Full Ralph Loop...${NC}${CYAN}                                    ║${NC}"
+    echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    
+    # Initialize log entry
+    DEPLOYMENT_DATE=$(date '+%Y-%m-%d')
+    echo "" >> "$CAPTAINS_LOG"
+    echo "## Deployment Cycle: $DEPLOYMENT_DATE" >> "$CAPTAINS_LOG"
+    echo "* $(date '+%H:%M:%S'): 🚀 Started Full Ralph Loop" >> "$CAPTAINS_LOG"
+    
+    # Step 1: Deploy
+    if ! cmd_deploy; then
+        log_event "ERROR" "Deployment failed. Aborting loop."
+        echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: FAILED (deployment)" >> "$CAPTAINS_LOG"
+        return 1
     fi
     
-    echo ""
-    echo -e "${CYAN}Verification Summary:${NC}"
-    echo -e "  ${GREEN}✓${NC} Healthy: $verified services"
-    if [ $checking -gt 0 ]; then
-        echo -e "  ${YELLOW}⏳${NC} Initializing: $checking services"
+    # Step 2: Audit
+    cmd_audit
+    audit_failed=$?
+    
+    # Step 3: Heal if needed
+    if [ $audit_failed -gt 0 ]; then
+        cmd_heal
+        # Re-audit after healing
+        log_event "INFO" "Re-auditing after healing..."
+        cmd_audit
+        audit_failed=$?
     fi
-    echo -e "  ${GREEN}✓${NC} Running: $RUNNING/$TOTAL containers"
-    if [ $failed -gt 0 ]; then
-        echo -e "  ${RED}✗${NC} Issues: $failed service(s)"
+    
+    # Step 4: Document
+    cmd_document
+    
+    # Final status
+    if [ $audit_failed -eq 0 ]; then
+        log_event "SUCCESS" "🏆 Ralph Loop Complete - All Systems Green"
+        echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: SUCCESS" >> "$CAPTAINS_LOG"
+    else
+        log_event "WARNING" "🏆 Ralph Loop Complete - Some services need attention"
+        echo "* $(date '+%H:%M:%S'): 🏆 Cycle Result: PARTIAL" >> "$CAPTAINS_LOG"
     fi
     echo ""
 }
@@ -223,7 +307,9 @@ service_status() {
     echo -e "${CYAN}║${NC} ${GREEN}📊 ARK Node Service Status${NC}${CYAN}                                    ║${NC}"
     echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    docker compose ps
+    echo -e "${YELLOW}Active Profiles:${NC} $COMPOSE_PROFILES"
+    echo ""
+    COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps
     echo ""
     echo -e "${CYAN}Storage Status:${NC}"
     df -h /mnt/dock 2>/dev/null | tail -1 | awk '{print "  Total: " $2 "  |  Used: " $3 " (" $5 ")  |  Available: " $4}'
@@ -243,16 +329,19 @@ update_logs_docs() {
 show_menu() {
     clear
     echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${GREEN}         ARK AUTONOMOUS MANAGER v2.0${NC}${CYAN}                          ║${NC}"
+    echo -e "${CYAN}║${NC} ${GREEN}         ARK AUTONOMOUS MANAGER v2.1${NC}${CYAN}                          ║${NC}"
     echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    echo -e "${YELLOW}Available Tasks:${NC}"
+    echo -e "${YELLOW}Available Commands:${NC}"
     echo ""
-    echo -e "  ${GREEN}1${NC}) Full Ralph Loop (Deploy & Verify Everything)"
-    echo -e "  ${GREEN}2${NC}) Service Status (View Current State)"
-    echo -e "  ${GREEN}3${NC}) Update Logs/Docs (Manual Sync)"
-    echo -e "  ${GREEN}4${NC}) View Captain's Log"
-    echo -e "  ${GREEN}5${NC}) View Manager Log"
+    echo -e "  ${GREEN}1${NC}) Full Ralph Loop (Deploy → Audit → Heal → Document)"
+    echo -e "  ${GREEN}2${NC}) Deploy (Sync, Pull, Start Services)"
+    echo -e "  ${GREEN}3${NC}) Audit (Health Check All Services)"
+    echo -e "  ${GREEN}4${NC}) Heal (Restart Unhealthy Containers)"
+    echo -e "  ${GREEN}5${NC}) Document (Backup & Update Logs)"
+    echo -e "  ${GREEN}6${NC}) Service Status (View Current State)"
+    echo -e "  ${GREEN}7${NC}) View Captain's Log"
+    echo -e "  ${GREEN}8${NC}) View Manager Log"
     echo -e "  ${GREEN}q${NC}) Quit"
     echo ""
 }
@@ -279,24 +368,39 @@ main() {
     if [ -n "$1" ]; then
         case "$1" in
             "loop"|"ralph")
-                full_ralph_loop
+                cmd_loop
+                exit 0
+                ;;
+            "deploy")
+                cmd_deploy
+                exit 0
+                ;;
+            "audit")
+                cmd_audit
+                exit 0
+                ;;
+            "heal")
+                cmd_heal
+                exit 0
+                ;;
+            "document")
+                cmd_document
                 exit 0
                 ;;
             "status")
                 service_status
                 exit 0
                 ;;
-            "update")
-                update_logs_docs
-                exit 0
-                ;;
             *)
-                echo "Usage: $0 [loop|status|update]"
+                echo "Usage: $0 [command]"
                 echo ""
                 echo "Commands:"
-                echo "  loop    - Run full Ralph Loop (non-interactive)"
-                echo "  status  - Show current system status"
-                echo "  update  - Update logs and documentation"
+                echo "  loop      - Run full Ralph Loop (deploy → audit → heal → document)"
+                echo "  deploy    - Sync blueprints, pull images, start services"
+                echo "  audit     - Health check all services"
+                echo "  heal      - Restart unhealthy containers"
+                echo "  document  - Backup configs and update logs"
+                echo "  status    - Show current system status"
                 echo ""
                 echo "No arguments: Interactive menu"
                 exit 1
@@ -307,28 +411,43 @@ main() {
     # Interactive menu
     while true; do
         show_menu
-        read -p "Select option [1-5, q]: " choice
+        read -p "Select option [1-8, q]: " choice
         
         case "$choice" in
             1)
-                full_ralph_loop
+                cmd_loop
                 echo ""
                 read -p "Press Enter to continue..."
                 ;;
             2)
-                service_status
+                cmd_deploy
                 echo ""
                 read -p "Press Enter to continue..."
                 ;;
             3)
-                update_logs_docs
+                cmd_audit
                 echo ""
                 read -p "Press Enter to continue..."
                 ;;
             4)
-                less "$CAPTAINS_LOG"
+                cmd_heal
+                echo ""
+                read -p "Press Enter to continue..."
                 ;;
             5)
+                cmd_document
+                echo ""
+                read -p "Press Enter to continue..."
+                ;;
+            6)
+                service_status
+                echo ""
+                read -p "Press Enter to continue..."
+                ;;
+            7)
+                less "$CAPTAINS_LOG"
+                ;;
+            8)
                 less "$LOG_DIR/manager.log"
                 ;;
             q|Q)

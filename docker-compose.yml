@@ -25,6 +25,8 @@ services:
   traefik:
     image: traefik:v3.1  # Note: 3.1+ handles newer Docker APIs better
     container_name: traefik
+    profiles:
+      - core
     environment:
       - DOCKER_API_VERSION=1.45  # Matches your new Docker 29.1 version
     command:
@@ -49,6 +51,8 @@ services:
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
+    profiles:
+      - core
     restart: unless-stopped
     ports:
       - "9000:9000"
@@ -68,6 +72,8 @@ services:
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
+    profiles:
+      - core
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -91,6 +97,8 @@ services:
   autoheal:
     image: willfarrell/autoheal:latest
     container_name: autoheal
+    profiles:
+      - core
     restart: unless-stopped
     environment:
       - AUTOHEAL_CONTAINER_LABEL=all
@@ -109,6 +117,8 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
+    profiles:
+      - apps
     restart: unless-stopped
     ports:
       - "11434:11434"
@@ -138,6 +148,8 @@ services:
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
+    profiles:
+      - apps
     restart: unless-stopped
     ports:
       - "3001:8080"
@@ -169,6 +181,8 @@ services:
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
+    profiles:
+      - media
     restart: unless-stopped
     ports:
       - "8096:8096"
@@ -200,6 +214,8 @@ services:
   audiobookshelf:
     image: ghcr.io/advplyr/audiobookshelf:latest
     container_name: audiobookshelf
+    profiles:
+      - media
     restart: unless-stopped
     ports:
       - "13378:80"
@@ -224,6 +240,8 @@ services:
   filebrowser:
     image: filebrowser/filebrowser:latest
     container_name: filebrowser
+    profiles:
+      - apps
     restart: unless-stopped
     ports:
       - "8081:80"
@@ -246,6 +264,8 @@ services:
   syncthing:
     image: syncthing/syncthing:latest
     container_name: syncthing
+    profiles:
+      - core
     restart: unless-stopped
     ports:
       - "8384:8384"     # Web UI
@@ -272,6 +292,8 @@ services:
   vaultwarden:
     image: vaultwarden/server:latest
     container_name: vaultwarden
+    profiles:
+      - apps
     restart: unless-stopped
     ports:
       - "8082:80"
@@ -297,6 +319,8 @@ services:
   kiwix:
     image: ghcr.io/kiwix/kiwix-serve:latest
     container_name: kiwix
+    profiles:
+      - apps
     restart: unless-stopped
     ports:
       - "8083:8080"
@@ -322,6 +346,8 @@ services:
   homeassistant:
     image: ghcr.io/home-assistant/home-assistant:stable
     container_name: homeassistant
+    profiles:
+      - media
     restart: unless-stopped
     ports:
       - "8123:8123"
@@ -343,6 +369,8 @@ services:
   tailscale:
     image: tailscale/tailscale:latest
     container_name: tailscale
+    profiles:
+      - core
     restart: unless-stopped
     network_mode: host
     environment:
@@ -365,6 +393,8 @@ services:
   gitea:
     image: gitea/gitea:latest
     container_name: gitea
+    profiles:
+      - apps
     restart: unless-stopped
     ports:
       - "3002:3000"
@@ -397,6 +427,8 @@ services:
   code-server:
     image: linuxserver/code-server:latest
     container_name: code-server
+    profiles:
+      - apps
     restart: unless-stopped
     ports:
       - "8443:8443"
