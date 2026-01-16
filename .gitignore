@@ -8,6 +8,7 @@ configs/*/
 
 # Keep config templates for installer
 !configs/homepage/
+!configs/datadog/README.md  # Allow Datadog config README
 configs/homepage/*.db
 configs/homepage/logs/
 

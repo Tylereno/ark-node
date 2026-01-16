@@ -2,7 +2,7 @@
 
 **Sovereign Operational Technology (OT) for Disconnected Environments**
 
-**Version:** 3.1.0  
+**Version:** 3.1.2  
 **Status:** **LTS (Long Term Support)**  
 **Classification:** UNCLASSIFIED / PROPRIETARY
 
@@ -18,7 +18,7 @@ ARK (Autonomous Resilient Kernel) is a sovereign infrastructure stack designed f
 
 > **LTS Declaration**
 > 
-> ARK v3.1.0 is the stable, feature-complete release. This version is frozen for long-term support. Future updates will strictly target security patches and critical constraint-driven fixes. No new features will be introduced to maintain maximum stability and deterministic behavior.
+> ARK v3.1.2 is the stable, feature-complete release. This version is frozen for long-term support. Future updates will strictly target security patches and critical constraint-driven fixes. No new features will be introduced to maintain maximum stability and deterministic behavior.
 
 ---
 
@@ -36,6 +36,8 @@ ARK is a **sovereign operational technology (OT) layer** designed for the extrem
 - **Human-Readable State & Watchdog Recovery:** Hardware-level monitoring with automatic recovery from software hangs
 - **Machine-Readable Status Contract:** JSON API for automation and monitoring (`ark-manager.sh status --json`)
 - **Deterministic State:** Pinned container versions ensure reproducible deployments
+- **Enterprise Telemetry:** Sentry error tracking and Datadog infrastructure monitoring for fleet management
+- **Structured Logging:** Standardized log format with rotation and dual output (STDOUT + files)
 
 ---
 
@@ -142,6 +144,7 @@ Essential infrastructure that provides the foundation:
 | **Tailscale** | Host | Secure mesh networking | `core` |
 | **Homepage** | 3000 | Operational dashboard | `core` |
 | **Portainer** | 9000 | Container management | `core` |
+| **Datadog Agent** | - | Infrastructure monitoring | `core` |
 | **Syncthing** | 8384 | Device file sync | `core` |
 
 ### Application Services (Optional)
@@ -235,18 +238,23 @@ The ARK architecture has been validated through extensive field testing via **Mo
 git clone <your-repo-url> /opt/ark
 cd /opt/ark
 
-# 2. Deploy the stack (all profiles)
+# 2. Configure environment (copy template and add your keys)
+cp .env.template .env
+nano .env  # Add Sentry DSN, Datadog API key, etc.
+
+# 3. Deploy the stack (all profiles)
 ./scripts/ark-manager.sh deploy
 
-# 3. Access operational dashboard
+# 4. Access operational dashboard
 # Open: http://192.168.26.8:3000
 ```
 
 ### What Just Happened?
 
 You just deployed:
-- 15 containerized services across 3 profiles
+- 16 containerized services across 3 profiles (including Datadog monitoring)
 - Autonomous infrastructure with self-healing capabilities
+- Enterprise telemetry (Sentry error tracking, Datadog metrics)
 - Zero-dependency boot sequence
 - Deterministic state management with pinned versions
 

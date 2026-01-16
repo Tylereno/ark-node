@@ -449,3 +449,33 @@ services:
       timeout: 10s
       retries: 3
 
+  # ========================================
+  # SERVICE 17: DATADOG AGENT - Infrastructure Monitoring
+  # ========================================
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:7  # LTS: Pinned for deterministic deployments
+    container_name: datadog-agent
+    profiles:
+      - core
+    restart: unless-stopped
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_SITE=us3.datadoghq.com  # CRITICAL: Your specific region (us3)
+      - DD_HOSTNAME=nomad-node
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      - DD_ENV=production
+      - DD_CONTAINER_EXCLUDE="name:datadog-agent"
+      - DD_APM_ENABLED=false  # Disable APM to reduce overhead
+      - DD_PROCESS_AGENT_ENABLED=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro  # Allows reading other containers' logs
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=false"  # Datadog agent doesn't need Traefik
+
