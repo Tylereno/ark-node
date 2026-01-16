@@ -40,10 +40,17 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - ark_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.ark.local`)"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "autoheal=true"
 
   # ========================================
   # SERVICE 2: PORTAINER - Container Management
@@ -61,10 +68,17 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - ark_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.portainer.rule=Host(`portainer.ark.local`)"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "autoheal=true"
 
   # ========================================
   # SERVICE 3: HOMEPAGE - Main Dashboard
@@ -83,26 +97,40 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - HOMEPAGE_ALLOWED_HOSTS=*
+      - HOMEPAGE_ALLOWED_HOSTS=192.168.26.8:3000,100.124.104.38:3000,localhost:3000,127.0.0.1:3000
+      - HOMEPAGE_VAR_URL=http://100.124.104.38:3000
     networks:
       - ark_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.homepage.rule=Host(`hub.ark.local`) || Host(`ark.local`)"
       - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+      - "autoheal=true"
 
   # ========================================
-  # SERVICE 4: AUTOHEAL - REMOVED in LTS v3.1.0
+  # SERVICE 4: AUTOHEAL - Container Health Watchdog
   # ========================================
-  # LTS Decision: Removed external dependency recovery agent in favor of native
-  # Docker restart policies (restart: unless-stopped) and ark-manager.sh heal command.
-  # This reduces memory overhead, eliminates a potential failure point, and relies
-  # on kernel-level restart policies which are 100% reliable.
-  #
-  # Self-healing is provided by:
-  # 1. Native Docker restart policies (all services have restart: unless-stopped)
-  # 2. ark-manager.sh heal command for manual/automated recovery
-  # 3. Ralph Loop (ark-manager.sh loop) for comprehensive health checks
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: autoheal
+    profiles:
+      - core
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+      - CURL_TIMEOUT=30
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - ark_network
+    labels:
+      - "traefik.enable=false"
 
   # ========================================
   # SERVICE 5: OLLAMA - AI LLM API

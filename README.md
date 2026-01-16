@@ -2,7 +2,7 @@
 
 **Sovereign Operational Technology (OT) for Disconnected Environments**
 
-**Version:** 3.1.2  
+**Version:** 3.1.2 (Industrial Edition)  
 **Status:** **LTS (Long Term Support)**  
 **Classification:** UNCLASSIFIED / PROPRIETARY
 
