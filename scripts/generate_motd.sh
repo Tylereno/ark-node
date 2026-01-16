@@ -7,7 +7,7 @@ ARK_DIR="/opt/ark"
 MOTD_FILE="/etc/motd"
 
 # Get system information
-VERSION=$(cat "$ARK_DIR/VERSION" 2>/dev/null || echo "3.1.0")
+VERSION=$(cat "$ARK_DIR/VERSION" 2>/dev/null || echo "3.1.1")
 UPTIME=$(uptime -p 2>/dev/null | sed 's/up //' || echo "Unknown")
 HOSTNAME=$(hostname)
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')

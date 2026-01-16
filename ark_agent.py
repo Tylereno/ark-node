@@ -1,12 +1,23 @@
 #!/usr/bin/env python3
-"""
-ARK CrewAI Agent - Autonomous DevOps Chief
-Connects the CrewAI system prompt to the ARK Manager v3.0
-"""
+# ARK v3.1.1 | Module: CrewAI Agent
+# Classification: INTERNAL
+# Purpose: Autonomous DevOps Chief - Connects CrewAI to ARK Manager
 
 import os
+import sys
 import subprocess
 import json
+from pathlib import Path
+
+# ARK v3.1.1: Use centralized configuration and logging
+sys.path.insert(0, str(Path(__file__).parent))
+from lib.config import ARK_SSH_HOST, ARK_SSH_USER
+from lib.logger import setup_logger
+from lib.telemetry import capture_exception, capture_message
+
+# Initialize structured logger
+logger = setup_logger(__name__)
+
 from crewai import Agent, Task, Crew, Process
 from langchain.tools import Tool
 
@@ -16,11 +27,12 @@ from langchain.tools import Tool
 
 def run_ralph_loop(dummy_input=None):
     """
-    Triggers the ARK Manager v3.0 Ralph Loop.
+    Triggers the ARK Manager v3.1.1 Ralph Loop.
     This assumes you are running this from your laptop via SSH,
     or locally on the server. Adjust SSH command if remote.
     """
     try:
+        logger.info("Triggering ARK Manager Ralph Loop...")
         # If running locally on the server
         if os.path.exists("/opt/ark/scripts/ark-manager.sh"):
             result = subprocess.run(
@@ -29,49 +41,66 @@ def run_ralph_loop(dummy_input=None):
                 text=True,
                 timeout=600  # 10 minute timeout
             )
+            if result.returncode == 0:
+                logger.info("Ralph Loop completed successfully")
+            else:
+                logger.warning(f"Ralph Loop completed with return code {result.returncode}")
             return result.stdout + "\n" + result.stderr if result.stderr else result.stdout
         
         # If running remotely via SSH
         else:
-            # Update these to match your setup
-            SSH_HOST = os.getenv("ARK_SSH_HOST", "100.124.104.38")
-            SSH_USER = os.getenv("ARK_SSH_USER", "nomadty")
-            
             result = subprocess.run(
-                ["ssh", f"{SSH_USER}@{SSH_HOST}", "/opt/ark/scripts/ark-manager.sh", "loop"],
+                ["ssh", f"{ARK_SSH_USER}@{ARK_SSH_HOST}", "/opt/ark/scripts/ark-manager.sh", "loop"],
                 capture_output=True,
                 text=True,
                 timeout=600
             )
+            if result.returncode == 0:
+                logger.info("Ralph Loop completed successfully (remote)")
+            else:
+                logger.warning(f"Ralph Loop completed with return code {result.returncode} (remote)")
             return result.stdout + "\n" + result.stderr if result.stderr else result.stdout
             
     except subprocess.TimeoutExpired:
-        return "ERROR: Ralph Loop timed out after 10 minutes"
+        error_msg = "ERROR: Ralph Loop timed out after 10 minutes"
+        logger.error(error_msg)
+        capture_message(error_msg, level="error", context={"module": "run_ralph_loop"})
+        return error_msg
     except Exception as e:
-        return f"ERROR: Failed to execute Ralph Loop: {str(e)}"
+        error_msg = f"ERROR: Failed to execute Ralph Loop: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        capture_exception(e, context={"module": "run_ralph_loop"})
+        return error_msg
 
 def get_captains_log(dummy_input=None):
     """Read the Captain's Log to check recent operations."""
     try:
+        logger.debug("Reading Captain's Log...")
         if os.path.exists("/opt/ark/docs/CAPTAINS_LOG.md"):
             with open("/opt/ark/docs/CAPTAINS_LOG.md", "r") as f:
-                return f.read()
+                content = f.read()
+                logger.debug(f"Captain's Log read successfully ({len(content)} chars)")
+                return content
         else:
             # Remote access via SSH
-            SSH_HOST = os.getenv("ARK_SSH_HOST", "100.124.104.38")
-            SSH_USER = os.getenv("ARK_SSH_USER", "nomadty")
             result = subprocess.run(
-                ["ssh", f"{SSH_USER}@{SSH_HOST}", "cat", "/opt/ark/docs/CAPTAINS_LOG.md"],
+                ["ssh", f"{ARK_SSH_USER}@{ARK_SSH_HOST}", "cat", "/opt/ark/docs/CAPTAINS_LOG.md"],
                 capture_output=True,
                 text=True
             )
+            if result.returncode == 0:
+                logger.debug(f"Captain's Log read successfully from remote ({len(result.stdout)} chars)")
             return result.stdout
     except Exception as e:
-        return f"ERROR: Failed to read Captain's Log: {str(e)}"
+        error_msg = f"ERROR: Failed to read Captain's Log: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        capture_exception(e, context={"module": "get_captains_log"})
+        return error_msg
 
 def get_service_status(dummy_input=None):
     """Get current Docker service status."""
     try:
+        logger.debug("Getting Docker service status...")
         if os.path.exists("/opt/ark/docker-compose.yml"):
             result = subprocess.run(
                 ["docker", "compose", "ps", "--format", "json"],
@@ -79,19 +108,24 @@ def get_service_status(dummy_input=None):
                 text=True,
                 cwd="/opt/ark"
             )
+            if result.returncode == 0:
+                logger.debug("Service status retrieved successfully")
             return result.stdout
         else:
             # Remote access
-            SSH_HOST = os.getenv("ARK_SSH_HOST", "100.124.104.38")
-            SSH_USER = os.getenv("ARK_SSH_USER", "nomadty")
             result = subprocess.run(
-                ["ssh", f"{SSH_USER}@{SSH_HOST}", "cd /opt/ark && docker compose ps --format json"],
+                ["ssh", f"{ARK_SSH_USER}@{ARK_SSH_HOST}", "cd /opt/ark && docker compose ps --format json"],
                 capture_output=True,
                 text=True
             )
+            if result.returncode == 0:
+                logger.debug("Service status retrieved successfully (remote)")
             return result.stdout
     except Exception as e:
-        return f"ERROR: Failed to get service status: {str(e)}"
+        error_msg = f"ERROR: Failed to get service status: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        capture_exception(e, context={"module": "get_service_status"})
+        return error_msg
 
 # Define tools
 ralph_tool = Tool(
@@ -169,31 +203,34 @@ audit_task = Task(
 
 def main():
     """Main execution function."""
-    print("=" * 70)
-    print("ARK System Overseer - Autonomous DevOps Chief")
-    print("=" * 70)
-    print()
+    logger.info("=" * 70)
+    logger.info("ARK v3.1.1 System Overseer - Autonomous DevOps Chief")
+    logger.info("=" * 70)
     
-    ark_crew = Crew(
-        agents=[ark_overseer],
-        tasks=[audit_task],
-        verbose=2,
-        process=Process.sequential
-    )
-    
-    print("Executing Ralph Loop audit...")
-    print()
-    
-    result = ark_crew.kickoff()
-    
-    print()
-    print("=" * 70)
-    print("AUDIT COMPLETE")
-    print("=" * 70)
-    print(result)
-    print()
-    
-    return result
+    try:
+        ark_crew = Crew(
+            agents=[ark_overseer],
+            tasks=[audit_task],
+            verbose=2,
+            process=Process.sequential
+        )
+        
+        logger.info("Executing Ralph Loop audit...")
+        capture_message("ARK Agent audit started", level="info")
+        
+        result = ark_crew.kickoff()
+        
+        logger.info("=" * 70)
+        logger.info("AUDIT COMPLETE")
+        logger.info("=" * 70)
+        logger.info(f"Result: {result}")
+        capture_message("ARK Agent audit completed", level="info")
+        
+        return result
+    except Exception as e:
+        logger.error(f"ARK Agent audit failed: {e}", exc_info=True)
+        capture_exception(e, context={"module": "main"})
+        raise
 
 if __name__ == "__main__":
     main()

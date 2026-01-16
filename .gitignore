@@ -21,6 +21,7 @@ configs/homepage/logs/
 # Secrets and credentials
 .env
 .env.*
+!.env.template  # Allow template file (no secrets)
 *.key
 *.pem
 *.crt

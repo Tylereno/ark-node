@@ -1,24 +1,8 @@
 #!/usr/bin/env python3
-"""
-Nomad Node - Voice Note Watcher
-Monitors the input directory for new audio files and processes them.
+# ARK v3.1.1 | Module: Voice Note Watcher
+# Classification: INTERNAL
+# Purpose: Monitor input directory for audio files and process via transcription/summarization
 
-Usage:
-    python services/voice_watcher/watcher.py
-
-Requirements:
-    - watchdog library
-    - python-dotenv library (for .env file loading)
-    - Audio files (.m4a, .mp3) should be synced to ./data/input via Syncthing
-
-Models Used (P53 Optimized):
-    - Chat/Summaries: granite4:3b
-    - Coding: qwen2.5-coder:3b
-    - Vision: qwen3-vl:2b
-    - Embeddings: nomic-embed-text
-"""
-
-import os
 import sys
 import time
 import json
@@ -27,7 +11,18 @@ from datetime import datetime
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from dotenv import load_dotenv
+
+# ARK v3.1.1: Use centralized configuration and logging
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from lib.config import (
+    MODEL_CHAT, MODEL_CODER, MODEL_VISION, MODEL_EMBEDDING,
+    OLLAMA_HOST, INPUT_DIR, OUTPUT_DIR, PROCESSED_DIR
+)
+from lib.logger import setup_logger
+from lib.telemetry import capture_exception, capture_message
+
+# Initialize structured logger
+logger = setup_logger(__name__)
 
 # Try to import Whisper (optional - will use Ollama if not available)
 try:
@@ -40,22 +35,8 @@ except ImportError:
         WHISPER_TYPE = "openai"
     except ImportError:
         WHISPER_AVAILABLE = False
-        print("WARNING: Whisper not available. Will use Ollama for transcription (slower).")
+        logger.warning("Whisper not available. Will use Ollama for transcription (slower).")
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Model Configuration (P53 Optimized Stack)
-MODEL_CHAT = os.getenv("MODEL_CHAT", "granite4:3b")
-MODEL_CODER = os.getenv("MODEL_CODER", "qwen2.5-coder:3b")
-MODEL_VISION = os.getenv("MODEL_VISION", "qwen3-vl:2b")
-MODEL_EMBEDDING = os.getenv("MODEL_EMBEDDING", "nomic-embed-text")
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-
-# Configuration (use environment variables if in Docker, otherwise defaults)
-INPUT_DIR = Path(os.getenv("INPUT_DIR", "./data/input"))
-OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", "./data/output"))
-PROCESSED_DIR = Path(os.getenv("PROCESSED_DIR", "./data/input/processed"))
 SUPPORTED_EXTENSIONS = {".m4a", ".mp3", ".wav", ".ogg"}
 
 # Ensure directories exist
@@ -99,7 +80,7 @@ class AudioFileHandler(FileSystemEventHandler):
     
     def transcribe_audio(self, file_path: Path) -> str:
         """Transcribe audio file to text using Whisper or Ollama."""
-        print(f"  Transcribing audio...")
+        logger.info(f"Transcribing audio file: {file_path.name}")
         
         # Try Whisper first (faster, more accurate)
         if WHISPER_AVAILABLE:
@@ -119,30 +100,25 @@ class AudioFileHandler(FileSystemEventHandler):
                     segments, info = model.transcribe(str(file_path), language="en")
                     transcript = " ".join([segment.text for segment in segments])
                 
-                print(f"  ✓ Transcription complete (Whisper)")
+                logger.info("Transcription complete (Whisper)")
                 return transcript.strip()
             except Exception as e:
-                print(f"  ⚠ Whisper transcription failed: {e}")
-                print(f"  Falling back to Ollama...")
+                logger.warning(f"Whisper transcription failed: {e}. Falling back to Ollama...")
+                capture_exception(e, context={"file": str(file_path), "module": "transcribe_audio"})
         
         # Fallback to Ollama (slower but works without Whisper)
         try:
-            # Read audio file as base64 or use Ollama's audio support
-            # Note: Ollama may not support audio directly, so we'll use a workaround
-            # For now, we'll use a text prompt asking Ollama to transcribe
-            # In production, you'd want to use Whisper or a dedicated transcription service
-            
             # Since Ollama doesn't directly support audio, we'll note this limitation
-            print(f"  ⚠ Ollama cannot transcribe audio directly")
-            print(f"  Install Whisper for transcription: pip install faster-whisper")
+            logger.warning("Ollama cannot transcribe audio directly. Install Whisper for transcription: pip install faster-whisper")
             return "[Transcription requires Whisper. Install: pip install faster-whisper]"
         except Exception as e:
-            print(f"  ✗ Transcription failed: {e}")
+            logger.error(f"Transcription failed: {e}")
+            capture_exception(e, context={"file": str(file_path), "module": "transcribe_audio"})
             return "[Transcription failed]"
     
     def summarize_text(self, text: str) -> str:
         """Summarize text using Ollama."""
-        print(f"  Summarizing with Ollama ({MODEL_CHAT})...")
+        logger.info(f"Summarizing with Ollama ({MODEL_CHAT})...")
         
         try:
             prompt = f"""Summarize this voice note transcript. Extract key points, action items, and important information.
@@ -170,27 +146,28 @@ Summary:"""
             if response.status_code == 200:
                 result = response.json()
                 summary = result.get("response", "").strip()
-                print(f"  ✓ Summary complete")
+                logger.info("Summary complete")
                 return summary
             else:
-                print(f"  ⚠ Ollama API returned status {response.status_code}")
+                logger.warning(f"Ollama API returned status {response.status_code}")
+                capture_message(f"Ollama API error: {response.status_code}", level="warning", context={"endpoint": OLLAMA_HOST})
                 return "[Summary failed - Ollama API error]"
         except requests.exceptions.ConnectionError:
-            print(f"  ✗ Cannot connect to Ollama at {OLLAMA_HOST}")
-            print(f"  Make sure Ollama is running and accessible")
+            logger.error(f"Cannot connect to Ollama at {OLLAMA_HOST}. Make sure Ollama is running and accessible")
+            capture_message(f"Ollama connection failed: {OLLAMA_HOST}", level="error")
             return "[Summary failed - Ollama not accessible]"
         except Exception as e:
-            print(f"  ✗ Summarization failed: {e}")
+            logger.error(f"Summarization failed: {e}")
+            capture_exception(e, context={"module": "summarize_text", "model": MODEL_CHAT})
             return f"[Summary failed: {str(e)}]"
     
     def process_audio_file(self, file_path: Path):
         """Process a new audio file."""
         filename = file_path.name
-        print(f"\n{'='*50}")
-        print(f"New Voice Note Detected: {filename}")
-        print(f"  Path: {file_path}")
-        print(f"  Size: {file_path.stat().st_size / 1024:.2f} KB")
-        print(f"  Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        file_size_kb = file_path.stat().st_size / 1024
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        logger.info(f"New voice note detected: {filename} (Size: {file_size_kb:.2f} KB, Time: {timestamp})")
         
         try:
             # Step 1: Transcribe
@@ -204,9 +181,9 @@ Summary:"""
             
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(f"# Voice Note: {filename}\n\n")
-                f.write(f"**Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+                f.write(f"**Date**: {timestamp}\n\n")
                 f.write(f"**Original File**: `{file_path}`\n\n")
-                f.write(f"**Size**: {file_path.stat().st_size / 1024:.2f} KB\n\n")
+                f.write(f"**Size**: {file_size_kb:.2f} KB\n\n")
                 f.write(f"---\n\n")
                 f.write(f"## Transcript\n\n{transcript}\n\n")
                 f.write(f"---\n\n")
@@ -214,47 +191,45 @@ Summary:"""
                 f.write(f"---\n\n")
                 f.write(f"**Model Used**: {MODEL_CHAT}\n\n")
             
-            print(f"  [OK] Processing complete!")
-            print(f"  [OK] Results saved to: {output_file}")
+            logger.info(f"Processing complete. Results saved to: {output_file}")
             
             # INFINITE LOOP GUARD: Move processed file to prevent re-processing
             try:
                 processed_path = PROCESSED_DIR / file_path.name
                 # If file with same name exists, add timestamp
                 if processed_path.exists():
-                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                    processed_path = PROCESSED_DIR / f"{file_path.stem}_{timestamp}{file_path.suffix}"
+                    timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    processed_path = PROCESSED_DIR / f"{file_path.stem}_{timestamp_str}{file_path.suffix}"
                 
                 import shutil
                 shutil.move(str(file_path), str(processed_path))
-                print(f"  [OK] Moved to: {processed_path}")
+                logger.info(f"Moved processed file to: {processed_path}")
             except Exception as move_error:
-                print(f"  [WARN] Could not move file to processed: {move_error}")
+                logger.warning(f"Could not move file to processed: {move_error}")
+                capture_exception(move_error, context={"file": str(file_path), "module": "process_audio_file"})
                 # Try to at least rename it to prevent re-processing
                 try:
                     renamed_path = file_path.with_suffix(file_path.suffix + ".done")
                     file_path.rename(renamed_path)
-                    print(f"  [OK] Renamed to: {renamed_path}")
-                except:
-                    pass
+                    logger.info(f"Renamed to: {renamed_path}")
+                except Exception as rename_error:
+                    logger.error(f"Failed to rename file: {rename_error}")
             
         except Exception as e:
-            print(f"  [ERR] Error processing file: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Error processing file: {e}", exc_info=True)
+            capture_exception(e, context={"file": str(file_path), "module": "process_audio_file"})
 
 
 def main():
     """Main entry point."""
-    print("=" * 50)
-    print("Nomad Node - Voice Note Watcher")
-    print("=" * 50)
-    print(f"Monitoring: {INPUT_DIR.absolute()}")
-    print(f"Output: {OUTPUT_DIR.absolute()}")
-    print(f"Supported formats: {', '.join(SUPPORTED_EXTENSIONS)}")
-    print("Press Ctrl+C to stop")
-    print("=" * 50)
-    print()
+    logger.info("=" * 50)
+    logger.info("ARK v3.1.1 - Voice Note Watcher")
+    logger.info("=" * 50)
+    logger.info(f"Monitoring: {INPUT_DIR.absolute()}")
+    logger.info(f"Output: {OUTPUT_DIR.absolute()}")
+    logger.info(f"Supported formats: {', '.join(SUPPORTED_EXTENSIONS)}")
+    logger.info("Press Ctrl+C to stop")
+    logger.info("=" * 50)
     
     # Ensure input directory exists
     INPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -266,18 +241,18 @@ def main():
     
     # Start watching
     observer.start()
-    print(f"✓ Watching for new audio files in {INPUT_DIR.absolute()}")
-    print()
+    logger.info(f"Watching for new audio files in {INPUT_DIR.absolute()}")
+    capture_message("Voice watcher started", level="info", context={"input_dir": str(INPUT_DIR)})
     
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\nStopping watcher...")
+        logger.info("Stopping watcher...")
         observer.stop()
     
     observer.join()
-    print("Watcher stopped.")
+    logger.info("Watcher stopped.")
 
 
 if __name__ == "__main__":

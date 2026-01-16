@@ -1,10 +1,17 @@
-# ARK CrewAI Agent Dependencies
+# ARK v3.1.1 - Python Dependencies
 # Install with: pip install -r requirements.txt
 
+# Core Dependencies
+python-dotenv>=1.0.0
+
+# Enterprise Telemetry (Sentry)
+sentry-sdk>=2.0.0
+# Note: Install in venv: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
+
+# CrewAI Agent Dependencies (Optional)
 crewai>=0.1.0
 langchain>=0.1.0
 langchain-openai>=0.0.5
-python-dotenv>=1.0.0
 
 # Optional but recommended
 openai>=1.0.0

@@ -5,6 +5,44 @@ All notable changes to ARK Node (Autonomous Edge Infrastructure) will be documen
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.1] - 2026-01-16 - Enterprise Instrumentation Release
+
+### Added
+
+- **Sentry Telemetry Integration** - Enterprise-grade error tracking and performance monitoring
+  - Automatic exception capture with context
+  - Structured logging integration
+  - Graceful degradation when offline (continues with local logging)
+- **Centralized Configuration** - New `lib/config.py` module for environment variable management
+- **Structured Logging** - New `lib/logger.py` module with rotating file handlers
+  - Standardized log format: `TIMESTAMP | LEVEL | MODULE | MESSAGE`
+  - Dual output: STDOUT (for Docker/Systemd) and rotating log files
+  - Configurable log levels and rotation policies
+- **Environment Variable Template** - `.env.template` file with all configuration options
+- **Telemetry Module** - `lib/telemetry.py` for Sentry integration with graceful fallback
+
+### Changed
+
+- **Python Scripts Refactored** - All Python modules now use:
+  - Structured logging instead of `print()` statements
+  - Centralized configuration from `lib/config.py`
+  - Sentry telemetry for error tracking
+- **Requirements Updated** - Added `sentry-sdk>=2.0.0` to `requirements.txt`
+- **Voice Watcher** - Refactored to use new logging and telemetry modules
+- **ARK Agent** - Refactored to use centralized config and structured logging
+
+### Security
+
+- **Environment Variables** - All hardcoded values moved to `.env` file (gitignored)
+- **Secret Management** - Centralized in `lib/config.py` with safe defaults
+- **Offline Resilience** - System continues operating if Sentry is unavailable
+
+### Technical Details
+
+- **Graceful Degradation** - Sentry integration fails silently if DSN not configured or connection fails
+- **Log Rotation** - Configurable via `LOG_ROTATION_SIZE` and `LOG_ROTATION_BACKUPS` environment variables
+- **Performance Monitoring** - Sentry traces_sample_rate set to 10% to minimize overhead
+
 ## [3.1.0] - 2026-01-16 - LTS Release (Long Term Support)
 
 ### 🏛️ LTS Declaration
@@ -2597,6 +2635,176 @@ These templates are ready for immediate deployment to:
 - Industrial partnerships (mining, DLE, aerospace)
 - Research collaborations (SLAC, National Labs)
 - Professional networking (LinkedIn, conferences)
+
+### Service Versions
+- **name ark_network**:  (not running)
+- **driver bridge**:  (not running)
+- **traefik**: traefik:v3.1 (not running)
+- **image traefik:v3.1  # Note: 3.1+ handles newer Docker APIs better**:  (not running)
+- **profiles**:  (not running)
+- **environment**:  (not running)
+- **command**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **portainer**: portainer/portainer-ce:2.20.4 (not running)
+- **image portainer/portainer-ce:2.20.4  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **homepage**: ghcr.io/gethomepage/homepage:v1.0.0 (not running)
+- **image ghcr.io/gethomepage/homepage:v1.0.0  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **ollama**: ollama/ollama:0.1.30 (not running)
+- **image ollama/ollama:0.1.30  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **open-webui**: ghcr.io/open-webui/open-webui:main (not running)
+- **image ghcr.io/open-webui/open-webui:main**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "curl", "-f", "http://localhost:8080/health"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+- **jellyfin**: jellyfin/jellyfin:10.11.4 (not running)
+- **image jellyfin/jellyfin:10.11.4  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "curl", "-f", "http://localhost:8096/health"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+- **audiobookshelf**: ghcr.io/advplyr/audiobookshelf:v2.10.0 (not running)
+- **image ghcr.io/advplyr/audiobookshelf:v2.10.0  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **filebrowser**: filebrowser/filebrowser:v2.49.0 (not running)
+- **image filebrowser/filebrowser:v2.49.0  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **syncthing**: syncthing/syncthing:v1.27.7 (not running)
+- **image syncthing/syncthing:v1.27.7  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **vaultwarden**: vaultwarden/server:v1.32.0 (not running)
+- **image vaultwarden/server:v1.32.0  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **kiwix**: ghcr.io/kiwix/kiwix-serve:3.8.0 (not running)
+- **image ghcr.io/kiwix/kiwix-serve:3.8.0  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **command ["*.zim"]**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+- **homeassistant**: ghcr.io/home-assistant/home-assistant:stable (not running)
+- **image ghcr.io/home-assistant/home-assistant:stable**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **tailscale**: tailscale/tailscale:v1.68.0 (not running)
+- **image tailscale/tailscale:v1.68.0  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **environment**:  (not running)
+- **volumes**:  (not running)
+- **privileged true**:  (not running)
+- **command tailscaled**:  (not running)
+- **gitea**: gitea/gitea:1.23.4 (not running)
+- **image gitea/gitea:1.23.4  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "curl", "-f", "http://localhost:3000/"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+- **code-server**: lscr.io/linuxserver/code-server:4.24.0 (not running)
+- **image lscr.io/linuxserver/code-server:4.24.0  # LTS: Pinned for deterministic deployments**:  (not running)
+- **profiles**:  (not running)
+- **restart unless-stopped**:  (not running)
+- **ports**:  (not running)
+- **volumes**:  (not running)
+- **environment**:  (not running)
+- **networks**:  (not running)
+- **labels**:  (not running)
+- **healthcheck**:  (not running)
+- **test ["CMD", "curl", "-f", "http://localhost:8443/"]**:  (not running)
+- **interval 30s**:  (not running)
+- **timeout 10s**:  (not running)
+- **retries 3**:  (not running)
+
+---
+
+## [2026-01-16] - Deployment 3e729bab
+
+### Changes
+- **Commit**: 3e729bab
+- **Message**: Refactor: Industrial standards compliance (Variables, MOTD, Demo Scripts)
 
 ### Service Versions
 - **name ark_network**:  (not running)
