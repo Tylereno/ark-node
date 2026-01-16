@@ -1,10 +1,8 @@
 #!/bin/bash
-################################################################################
-# DOWNLOAD-WIKIPEDIA.SH - Wikipedia ZIM Downloader for Kiwix
-# Part of: Project Nomad (ARK Node)
-# Purpose: Download Wikipedia ZIM archives for offline access
+# ARK v3.1.0 | Module: Wikipedia ZIM Downloader
+# Classification: INTERNAL
+# Purpose: Download Wikipedia ZIM archives for offline access via Kiwix
 # Target: /mnt/dock/data/media/kiwix/
-################################################################################
 
 set -e
 
@@ -17,7 +15,7 @@ NC='\033[0m' # No Color
 
 # Banner
 echo -e "${BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║         WIKIPEDIA ZIM DOWNLOADER - PROJECT NOMAD              ║${NC}"
+echo -e "${BLUE}║         WIKIPEDIA ZIM DOWNLOADER - ARK v3.1.0                 ║${NC}"
 echo -e "${BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 

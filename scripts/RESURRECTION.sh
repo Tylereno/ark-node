@@ -1,8 +1,7 @@
 #!/bin/bash
-# ============================================================================
-# PROJECT NOMAD - PHASE 1.1: THE RESURRECTION
-# Deploys enhanced stack and ensures all operations are running
-# ============================================================================
+# ARK v3.1.0 | Module: Service Resurrection
+# Classification: INTERNAL
+# Purpose: Deploy enhanced stack and verify all services are operational
 
 # Colors
 GREEN='\033[0;32m'
@@ -17,7 +16,7 @@ NC='\033[0m'
 clear 2>/dev/null || true
 echo ""
 echo -e "${CYAN}════════════════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⬢ PROJECT NOMAD: PHASE 1.1 - THE RESURRECTION${NC}"
+echo -e "${CYAN}⬢ ARK v3.1.0: SERVICE RESURRECTION${NC}"
 echo -e "${CYAN}════════════════════════════════════════════════════════════════════════════${NC}"
 echo -e "${YELLOW}Deploying: Tailscale, Gitea, Code-Server${NC}"
 echo -e "${YELLOW}Verifying: Wikipedia, Ollama Model, All Services${NC}"
