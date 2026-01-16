@@ -302,18 +302,78 @@ cmd_loop() {
 }
 
 service_status() {
-    clear
-    echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC} ${GREEN}📊 ARK Node Service Status${NC}${CYAN}                                    ║${NC}"
-    echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-    echo -e "${YELLOW}Active Profiles:${NC} $COMPOSE_PROFILES"
-    echo ""
-    COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps
-    echo ""
-    echo -e "${CYAN}Storage Status:${NC}"
-    df -h /mnt/dock 2>/dev/null | tail -1 | awk '{print "  Total: " $2 "  |  Used: " $3 " (" $5 ")  |  Available: " $4}'
-    echo ""
+    local json_output=false
+    if [ "$1" == "--json" ]; then
+        json_output=true
+    fi
+    
+    if [ "$json_output" == "true" ]; then
+        # JSON output mode for machine parsing (CrewAI, monitoring tools)
+        local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        local version=$(cat "$ARK_DIR/VERSION" 2>/dev/null || echo "unknown")
+        
+        # Build profiles array (manual JSON array formatting)
+        local profiles_list=""
+        IFS=',' read -ra PROFILE_ARRAY <<< "$COMPOSE_PROFILES"
+        for profile in "${PROFILE_ARRAY[@]}"; do
+            if [ -z "$profiles_list" ]; then
+                profiles_list="\"$profile\""
+            else
+                profiles_list="$profiles_list, \"$profile\""
+            fi
+        done
+        local profiles_array="[$profiles_list]"
+        
+        # Count containers using docker compose ps
+        local running=$(COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps --format json 2>/dev/null | grep -c '"State":"running"' 2>/dev/null || COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps | grep -c "Up" 2>/dev/null || echo "0")
+        local total=$(COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps --format json 2>/dev/null | grep -c '"Name":' 2>/dev/null || COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps --format "{{.Name}}" 2>/dev/null | grep -v "^NAME$" | wc -l | tr -d ' ' || echo "0")
+        
+        # Count unhealthy containers
+        local unhealthy=0
+        local services=("homepage" "kiwix" "jellyfin" "open-webui" "portainer" "traefik" "ollama" "filebrowser" "vaultwarden" "gitea" "code-server" "syncthing" "audiobookshelf" "homeassistant")
+        for name in "${services[@]}"; do
+            running_state=$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null)
+            health=$(docker inspect -f '{{.State.Health.Status}}' "$name" 2>/dev/null)
+            if [ "$running_state" != "true" ] || [ "$health" == "unhealthy" ]; then
+                ((unhealthy++))
+            fi
+        done
+        
+        # Determine system status
+        local system_status="GREEN"
+        if [ "$unhealthy" -gt 0 ]; then
+            system_status="RED"
+        elif [ "$running" -lt "$total" ] && [ "$total" -gt 0 ]; then
+            system_status="AMBER"
+        fi
+        
+        # Build JSON output (manual formatting - no jq dependency)
+        echo "{"
+        echo "  \"timestamp\": \"$timestamp\","
+        echo "  \"deployment_version\": \"$version\","
+        echo "  \"profiles_active\": $profiles_array,"
+        echo "  \"services\": {"
+        echo "    \"total\": $total,"
+        echo "    \"running\": $running,"
+        echo "    \"unhealthy\": $unhealthy"
+        echo "  },"
+        echo "  \"system_status\": \"$system_status\""
+        echo "}"
+    else
+        # Human-readable output mode
+        clear
+        echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${CYAN}║${NC} ${GREEN}📊 ARK Node Service Status${NC}${CYAN}                                    ║${NC}"
+        echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${YELLOW}Active Profiles:${NC} $COMPOSE_PROFILES"
+        echo ""
+        COMPOSE_PROFILES="$COMPOSE_PROFILES" docker compose ps
+        echo ""
+        echo -e "${CYAN}Storage Status:${NC}"
+        df -h /mnt/dock 2>/dev/null | tail -1 | awk '{print "  Total: " $2 "  |  Used: " $3 " (" $5 ")  |  Available: " $4}'
+        echo ""
+    fi
 }
 
 update_logs_docs() {
@@ -388,7 +448,11 @@ main() {
                 exit 0
                 ;;
             "status")
-                service_status
+                if [ "$2" == "--json" ]; then
+                    service_status "--json"
+                else
+                    service_status
+                fi
                 exit 0
                 ;;
             *)
@@ -401,6 +465,7 @@ main() {
                 echo "  heal      - Restart unhealthy containers"
                 echo "  document  - Backup configs and update logs"
                 echo "  status    - Show current system status"
+                echo "  status --json - Show status in JSON format (for automation)"
                 echo ""
                 echo "No arguments: Interactive menu"
                 exit 1
