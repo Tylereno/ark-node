@@ -1,0 +1,10 @@
+# ARK CrewAI Agent Dependencies
+# Install with: pip install -r requirements.txt
+
+crewai>=0.1.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+python-dotenv>=1.0.0
+
+# Optional but recommended
+openai>=1.0.0
